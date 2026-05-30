@@ -26,8 +26,17 @@ type Row =
   | { type: 'row'; wrapRow?: boolean; cells: Cell[] }
 
 const NCOL = 7
-// Value column (track 3) is widened so full index levels (e.g. 19,421.30) don't clip.
-const TMPL = '30px 56px 72px minmax(110px, 1.5fr) minmax(110px, 1.35fr) 64px 58px 44px'
+// headline/summary use unconstrained fr so they shrink before fixed right columns get cut off.
+const TMPL = '30px 56px 72px 1.5fr 0.9fr 92px 72px 58px'
+
+function isSafeUrl(url: string): boolean {
+  try {
+    const p = new URL(url).protocol
+    return p === 'https:' || p === 'http:'
+  } catch {
+    return false
+  }
+}
 
 /**
  * Stock news rendered as an Excel worksheet (column letters, row numbers, grid),
@@ -89,7 +98,7 @@ export default function NewsPane({ indices, news, quotes, onClose, onRefresh }: 
         { t: n.headline, wrap: true },
         { t: n.summary, cls: 'sumcell', wrap: true },
         { link: n.url },
-        { t: n.source },
+        { t: n.source, wrap: true },
         { t: relTime(n.datetime, t) },
       ],
     })
@@ -148,7 +157,7 @@ export default function NewsPane({ indices, news, quotes, onClose, onRefresh }: 
             {cell.link ? (
               <a
                 className="np-link"
-                href={cell.link}
+                href={isSafeUrl(cell.link) ? cell.link : '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 onMouseDown={(e) => e.stopPropagation()}

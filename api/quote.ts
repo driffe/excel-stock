@@ -5,6 +5,12 @@
 import { getQuoteCached } from '../src/server/quoteCache'
 
 export async function GET(req: Request): Promise<Response> {
+  const allowed = process.env.ALLOWED_ORIGIN ?? ''
+  const origin = req.headers.get('origin') ?? ''
+  if (allowed && origin && origin !== allowed) {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const symbol = new URL(req.url).searchParams.get('symbol') ?? ''
   if (!symbol) {
     return new Response(JSON.stringify({ error: 'missing symbol' }), {
@@ -16,7 +22,8 @@ export async function GET(req: Request): Promise<Response> {
     const quote = await getQuoteCached(process.env, symbol)
     return Response.json(quote)
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
+    const msg = process.env.NODE_ENV === 'development' ? String(e) : 'upstream error'
+    return new Response(JSON.stringify({ error: msg }), {
       status: 502,
       headers: { 'content-type': 'application/json' },
     })

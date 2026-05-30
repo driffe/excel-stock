@@ -303,8 +303,20 @@ html, body {
 /* ===== middle split + news pane ===== */
 .midrow { flex: 1; display: flex; min-height: 0; }
 .newspane {
-  flex: 0 0 54%; min-width: 380px; max-width: 960px; background: #FBFBFA;
+  flex: 1; min-width: 0; background: #FBFBFA;
   border-left: 1px solid #D6D4D1; display: flex; flex-direction: column;
+}
+
+/* ===== split handle ===== */
+.split-handle {
+  flex: 0 0 5px; cursor: col-resize; background: var(--line);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.split-handle:hover { background: var(--green-hdr); }
+.split-handle::after {
+  content: ''; width: 2px; height: 28px; background: #b0b0b0;
+  border-radius: 1px; box-shadow: 3px 0 0 #b0b0b0, -3px 0 0 #b0b0b0;
 }
 .np-head {
   height: 30px; flex: 0 0 30px; background: var(--hdr-bg); border-bottom: 1px solid #C6C6C6;
@@ -368,6 +380,12 @@ html, body {
 .favstar.on { color: #F2B600; }
 .gcell.namecell { padding-left: 20px; }
 .gcell.favrow { background: #FFFBEC; }
+
+/* formula bar date */
+.fbar-date {
+  display: flex; align-items: center; padding: 0 12px; border-left: 1px solid var(--line);
+  font-size: 11.5px; color: #8a8a8a; white-space: nowrap;
+}
 
 /* formula bar refresh */
 .fbar-refresh {

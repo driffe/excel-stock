@@ -14,9 +14,16 @@ export interface Sheet {
 
 export const DEFAULT_SHEETS: Sheet[] = [
   {
-    id: 'top10',
+    // NASDAQ top 10 by market cap.
+    id: 'nasdaq',
     name: null,
-    symbols: ['NVDA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA', 'AVGO', 'JPM', 'V'],
+    symbols: ['NVDA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'AVGO', 'TSLA', 'NFLX', 'COST'],
+  },
+  {
+    // NYSE top 10 by market cap.
+    id: 'nyse',
+    name: null,
+    symbols: ['BRK.B', 'LLY', 'JPM', 'WMT', 'V', 'ORCL', 'MA', 'XOM', 'JNJ', 'UNH'],
   },
   {
     id: 'etf',

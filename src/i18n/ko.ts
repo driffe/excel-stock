@@ -48,7 +48,8 @@ export const ko: Record<TranslationKey, string> = {
   'col.change': '등락률',
 
   // Sheet default names
-  'sheet.top10': 'top10',
+  'sheet.nasdaq': '나스닥 10',
+  'sheet.nyse': '뉴욕 10',
   'sheet.etf': 'ETF',
   'sheet.holdings': '보유',
   'sheet.fav': '관심',

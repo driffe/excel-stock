@@ -17,6 +17,16 @@ export const SYMBOL_NAMES: Record<string, { en: string; ko: string }> = {
   JPM: { en: 'JPMorgan Chase', ko: 'JP모건' },
   V: { en: 'Visa Inc', ko: '비자' },
   NFLX: { en: 'Netflix Inc', ko: '넷플릭스' },
+  COST: { en: 'Costco Wholesale', ko: '코스트코' },
+  // NYSE top 10
+  'BRK.B': { en: 'Berkshire Hathaway', ko: '버크셔 해서웨이' },
+  LLY: { en: 'Eli Lilly', ko: '일라이 릴리' },
+  WMT: { en: 'Walmart Inc', ko: '월마트' },
+  MA: { en: 'Mastercard Inc', ko: '마스터카드' },
+  ORCL: { en: 'Oracle Corp', ko: '오라클' },
+  XOM: { en: 'ExxonMobil', ko: '엑슨모빌' },
+  JNJ: { en: 'Johnson & Johnson', ko: '존슨앤드존슨' },
+  UNH: { en: 'UnitedHealth Group', ko: '유나이티드헬스' },
   // ETF
   SPY: { en: 'SPDR S&P 500', ko: 'SPDR S&P 500' },
   QQQ: { en: 'Invesco QQQ Trust', ko: '인베스코 QQQ' },

@@ -18,7 +18,7 @@ import { getDecoy } from './data/decoy'
 import { colName, fmtChange, fmtPrice } from './lib/format'
 import type { Quote } from './types'
 
-const LS = 'excelstock_v3'
+const LS = 'excelstock_v4'
 const TOTAL_COLS = 26
 const TOTAL_ROWS = 100
 const BAR_UP = 'rgba(26,126,60,.22)'
@@ -92,6 +92,8 @@ export default function App() {
   const [hint, setHint] = useState(true)
   const [renameId, setRenameId] = useState<string | null>(null)
   const [showNews, setShowNews] = useState(true)
+  const [splitPct, setSplitPct] = useState(35)
+  const midrowRef = useRef<HTMLDivElement>(null)
 
   const isFav = !decoy && activeSheet === FAV_SHEET_ID
   const quotesRef = useRef<Record<string, Quote>>({})
@@ -340,6 +342,24 @@ export default function App() {
     return (c === 2 && fm !== 'all') || (c === 0 && ff)
   }
 
+  // ---- split handle drag ----
+  function onHandleMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startPct = splitPct
+    const totalW = midrowRef.current?.offsetWidth ?? 1
+    function onMove(ev: MouseEvent) {
+      const newPct = Math.min(70, Math.max(15, startPct + ((ev.clientX - startX) / totalW) * 100))
+      setSplitPct(newPct)
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   // ---- refresh ----
   function doRefresh() {
     if (decoy) return
@@ -489,41 +509,48 @@ export default function App() {
         onRefresh={!decoy ? doRefresh : null}
         spinning={spinning}
       />
-      <div className="midrow">
-        <Grid
-          totalCols={TOTAL_COLS}
-          totalRows={TOTAL_ROWS}
-          colW={colW}
-          sel={sel}
-          setSel={(s) => {
-            if (!editing) setSel(s)
-          }}
-          editing={editing}
-          editVal={editVal}
-          setEditVal={setEditVal}
-          commitEdit={commitEdit}
-          startEdit={startEdit}
-          cellAt={cellAt}
-          sortCol={!decoy && sortCur ? sortCur.col : -1}
-          sortDir={sortCur ? sortCur.dir : 'asc'}
-          onSortCol={onSortCol}
-          flash={flash}
-          headerFilterCols={decoy ? 0 : 3}
-          onHeaderFilter={(c, rect) =>
-            setOpenFilter((o) => (o && o.col === c ? null : { col: c, x: rect.left, y: rect.bottom }))
-          }
-          isFiltered={isFiltered}
-          favRow={favRow}
-          onToggleFav={toggleFav}
-        />
-        {showNews && !decoy && (
-          <NewsPane
-            indices={indices}
-            news={news}
-            quotes={quotes}
-            onClose={() => setShowNews(false)}
-            onRefresh={doRefresh}
+      <div className="midrow" ref={midrowRef}>
+        <div style={{ flex: showNews && !decoy ? `0 0 ${splitPct}%` : 1, display: 'flex', minWidth: 0 }}>
+          <Grid
+            totalCols={TOTAL_COLS}
+            totalRows={TOTAL_ROWS}
+            colW={colW}
+            sel={sel}
+            setSel={(s) => {
+              if (!editing) setSel(s)
+            }}
+            editing={editing}
+            editVal={editVal}
+            setEditVal={setEditVal}
+            commitEdit={commitEdit}
+            startEdit={startEdit}
+            cellAt={cellAt}
+            sortCol={!decoy && sortCur ? sortCur.col : -1}
+            sortDir={sortCur ? sortCur.dir : 'asc'}
+            onSortCol={onSortCol}
+            flash={flash}
+            headerFilterCols={decoy ? 0 : 3}
+            onHeaderFilter={(c, rect) =>
+              setOpenFilter((o) => (o && o.col === c ? null : { col: c, x: rect.left, y: rect.bottom }))
+            }
+            isFiltered={isFiltered}
+            favRow={favRow}
+            onToggleFav={toggleFav}
           />
+        </div>
+        {showNews && !decoy && (
+          <>
+            <div className="split-handle" onMouseDown={onHandleMouseDown} />
+            <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
+              <NewsPane
+                indices={indices}
+                news={news}
+                quotes={quotes}
+                onClose={() => setShowNews(false)}
+                onRefresh={doRefresh}
+              />
+            </div>
+          </>
         )}
       </div>
 

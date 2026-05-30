@@ -46,7 +46,8 @@ export const en = {
   'col.change': 'Change %',
 
   // Sheet default names
-  'sheet.top10': 'Top 10',
+  'sheet.nasdaq': 'NASDAQ 10',
+  'sheet.nyse': 'NYSE 10',
   'sheet.etf': 'ETF',
   'sheet.holdings': 'Holdings',
   'sheet.fav': 'Watchlist',

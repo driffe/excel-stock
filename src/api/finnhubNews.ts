@@ -1,5 +1,8 @@
 import type { NewsProvider } from './news'
 import type { NewsItem } from '../types'
+import { resolveNewsSources } from './resolveSource'
+import { relatedSymbols } from './tickerMatch'
+// note: company-news `related` is re-derived from actual headline/summary mentions
 
 interface FinnhubNews {
   category: string
@@ -53,7 +56,7 @@ export class FinnhubNewsProvider implements NewsProvider {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`Finnhub market-news error ${res.status}`)
     const arr = (await res.json()) as FinnhubNews[]
-    return arr.slice(0, 30).map(normalize)
+    return resolveNewsSources(arr.slice(0, 30).map(normalize))
   }
 
   async getCompanyNews(symbols: string[]): Promise<NewsItem[]> {
@@ -72,14 +75,7 @@ export class FinnhubNewsProvider implements NewsProvider {
         const res = await fetch(url)
         if (!res.ok) throw new Error(`Finnhub company-news error ${res.status} for ${sym}`)
         const arr = (await res.json()) as FinnhubNews[]
-        // Ensure the originating symbol is in `related` for UI grouping.
-        return arr.slice(0, 4).map((n) => {
-          const item = normalize(n)
-          if (!item.related.includes(sym.toUpperCase())) {
-            item.related = [sym.toUpperCase(), ...item.related]
-          }
-          return item
-        })
+        return arr.slice(0, 4).map(normalize)
       }),
     )
 
@@ -93,6 +89,13 @@ export class FinnhubNewsProvider implements NewsProvider {
         merged.push(item)
       }
     }
-    return merged.sort((a, b) => b.datetime - a.datetime)
+
+    // Re-tag from actual mentions: Finnhub returns loosely-related articles under a
+    // symbol's company-news, so trust the headline/summary, not the queried symbol.
+    for (const item of merged) {
+      item.related = relatedSymbols(`${item.headline} ${item.summary}`, symbols)
+    }
+
+    return resolveNewsSources(merged.sort((a, b) => b.datetime - a.datetime))
   }
 }

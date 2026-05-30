@@ -8,6 +8,15 @@ interface FormulaBarProps {
   spinning: boolean
 }
 
+function todayStr(lang: 'en' | 'ko'): string {
+  return new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    weekday: 'short',
+  })
+}
+
 /** Excel formula bar: name box, fx area, the cell formula, and a quote-refresh button. */
 export default function FormulaBar({
   selRef,
@@ -16,7 +25,7 @@ export default function FormulaBar({
   onRefresh,
   spinning,
 }: FormulaBarProps) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   return (
     <div className="fbar">
       <div className="namebox cellfont">
@@ -29,6 +38,7 @@ export default function FormulaBar({
         <span className="fx">fx</span>
       </div>
       <div className="fbar-input cellfont">{formula}</div>
+      <div className="fbar-date cellfont">{todayStr(lang)}</div>
       {onRefresh && (
         <div
           className={'fbar-refresh' + (spinning ? ' spin' : '')}

@@ -45,6 +45,23 @@ Patterns captured after user corrections / verification gaps, per CLAUDE.md "Sel
   `/api/quote` calls that each hit Finnhub → 429→502. An in-flight-promise cache keyed by
   symbol (+ short TTL) collapses them to one upstream call. See `api/_lib/quoteCache.ts`.
 
+## News source accuracy (Finnhub)
+
+- Finnhub news returns a `finnhub.io/api/news?id=…` **redirect** `url` and a generic
+  aggregator `source` ("Yahoo") — so a Motley Fool article hosted on Yahoo displays as
+  "Yahoo", and links don't show the real publisher. The redirect only resolves with a
+  browser `User-Agent` (server-side `curl -I` without UA loops to finnhub.io home; `GET`
+  with a Chrome UA → `www.fool.com/...`). Fix in `src/api/resolveSource.ts`: follow the
+  redirect server-side (browser UA, HEAD-like GET with body cancelled, `AbortSignal`
+  timeout), re-label `source` from the real domain (domain→name map, else the domain
+  itself), id-keyed cache + concurrency cap. Only touches finnhub.io links, so it never
+  adds requests for already-real URLs (market news from cnbc.com etc.).
+- Finnhub's company-news endpoint tags **loosely**-related articles with the queried symbol
+  (a Datadog/Buffett piece comes back tagged "NVDA"). Don't trust its `related` — re-derive
+  it from actual mentions in headline+summary (`src/api/tickerMatch.ts`: ticker ≥3 chars +
+  first distinctive company-name word + aliases like Google/Facebook). Articles naming no
+  watchlist symbol get `[]` → "—" in the Ticker column, which is honest.
+
 ## Design handoff bundles (Claude Design)
 
 - A `WebFetch` of a Claude Design handoff URL returns a **gzipped tar**, not HTML — `WebFetch`
