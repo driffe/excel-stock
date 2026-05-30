@@ -1,0 +1,48 @@
+// Server-side quote cache + request coalescing. Collapses duplicate/rapid quote
+// requests (React StrictMode's double mount, overlapping polls) into a single
+// upstream Finnhub call, and serves a short TTL cache — which is what keeps live
+// mode under Finnhub's free-tier rate limit. Module state persists across requests
+// in a warm process (Vite dev server; warm Vercel function instance).
+import { buildServerQuoteProvider } from './providers'
+import type { QuoteProvider } from '../api/provider'
+import type { Quote } from '../types'
+
+type Env = Record<string, string | undefined>
+
+const TTL_MS = 12_000
+const cache = new Map<string, { at: number; quote: Quote }>()
+const inflight = new Map<string, Promise<Quote>>()
+
+let provider: QuoteProvider | null = null
+function getProvider(env: Env): QuoteProvider {
+  return (provider ??= buildServerQuoteProvider(env))
+}
+
+export async function getQuoteCached(env: Env, symbol: string): Promise<Quote> {
+  const key = symbol.toUpperCase()
+  const now = Date.now()
+
+  const hit = cache.get(key)
+  if (hit && now - hit.at < TTL_MS) return hit.quote
+
+  const pending = inflight.get(key)
+  if (pending) return pending
+
+  const promise = getProvider(env)
+    .getQuote(key)
+    .then((quote) => {
+      cache.set(key, { at: Date.now(), quote })
+      inflight.delete(key)
+      return quote
+    })
+    .catch((err) => {
+      inflight.delete(key)
+      // On an upstream error (e.g. a transient 429), serve a stale value if we have one.
+      const stale = cache.get(key)
+      if (stale) return stale.quote
+      throw err
+    })
+
+  inflight.set(key, promise)
+  return promise
+}
