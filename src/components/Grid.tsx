@@ -8,6 +8,8 @@ export interface CellData {
   cls?: string
   star?: { ticker: string; on: boolean }
   bar?: { left: number; width: number; color: string } | null
+  sub?: string
+  hint?: boolean
 }
 
 export interface Sel {
@@ -172,7 +174,10 @@ export default function Grid({
               }}
             />
           ) : data ? (
-            <span className="celltext">{data.text}</span>
+            <>
+              <span className={data.hint ? 'cellhint' : 'celltext'}>{data.text}</span>
+              {data.sub && <span className="cellsub">{data.sub}</span>}
+            </>
           ) : (
             ''
           )}

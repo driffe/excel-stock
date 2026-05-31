@@ -7,6 +7,8 @@ import SheetTabs, { type TabItem } from './components/SheetTabs'
 import StatusBar from './components/StatusBar'
 import NewsPane from './components/NewsPane'
 import AddDialog from './components/AddDialog'
+import CoffeeDialog from './components/CoffeeDialog'
+import HelpDialog from './components/HelpDialog'
 import FilterMenu, { type FilterMode } from './components/FilterMenu'
 import { useQuotes } from './hooks/useQuotes'
 import { useNews } from './hooks/useNews'
@@ -92,6 +94,8 @@ export default function App() {
   const [hint, setHint] = useState(true)
   const [renameId, setRenameId] = useState<string | null>(null)
   const [showNews, setShowNews] = useState(true)
+  const [showCoffee, setShowCoffee] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
   const [splitPct, setSplitPct] = useState(35)
   const midrowRef = useRef<HTMLDivElement>(null)
 
@@ -204,31 +208,53 @@ export default function App() {
   function cellAt(r: number, c: number): CellData | null {
     if (decoy) {
       const D = getDecoy(lang)
-      if (r === 0) return c === 0 ? { text: D.title, cls: 'bold' } : null
-      if (r === 2) return c < D.headers.length ? { text: D.headers[c], cls: 'bold' } : null
-      const di = r - 3
-      if (r >= 3 && di < D.rows.length) {
-        const row = D.rows[di]
-        if (c < row.length) {
-          const v = row[c]
-          const isTotal = row[0] === D.totalLabel
-          if (typeof v === 'number')
-            return { text: v.toLocaleString('en-US'), num: true, cls: isTotal ? 'bold' : '' }
-          return { text: String(v), num: c === 4, cls: isTotal ? 'bold' : '' }
+      if (r >= D.rows.length) return null
+      const row = D.rows[r]
+      switch (row.type) {
+        case 'title':
+          return { text: c === 0 ? row.text : '', cls: 'bold dcoy-co' }
+        case 'report':
+          return c === 0 ? { text: row.text, cls: 'dcoy-rpt' } : null
+        case 'meta':
+          if (c < row.cells.length && row.cells[c] != null)
+            return { text: String(row.cells[c]), cls: 'dcoy-meta' }
+          return null
+        case 'empty':
+          return null
+        case 'header':
+          if (c < row.cells.length)
+            return { text: row.cells[c], cls: 'bold dcoy-hdr', num: c > 0 }
+          return { text: '', cls: 'dcoy-hdr' }
+        case 'section':
+          return { text: c === 0 ? row.text : '', cls: 'dcoy-sec' }
+        case 'data': {
+          if (c >= row.cells.length) return null
+          const v = row.cells[c]
+          if (v == null) return null
+          const cls = row.total ? 'bold dcoy-tot' : row.sub ? 'bold dcoy-sub' : ''
+          return {
+            text: typeof v === 'number' ? v.toLocaleString('en-US') : String(v),
+            num: c > 0,
+            cls,
+          }
         }
+        case 'note':
+          return c === 0 ? { text: row.text, cls: 'dcoy-note' } : null
       }
-      return null
     }
     if (r === 0) {
       const h = [t('col.name'), t('col.price'), t('col.change')]
       return c < 3 ? { text: h[c], cls: 'bold' } : null
     }
     const i = r - 1
+    if (i === view.length && c === 0 && !isFav) {
+      return { text: t('grid.addHint'), hint: true }
+    }
     if (i < view.length) {
       const sym = view[i].sym
       const q = quotes[sym]
       const on = favs.has(sym)
-      if (c === 0) return { text: sym, star: { ticker: sym, on } }
+      if (c === 0) return { text: sym, star: { ticker: sym, on }, sub: lookupName(sym, lang) || undefined }
       if (c === 1) return { text: q?.price != null ? '$' + fmtPrice(q.price) : '—', num: true }
       if (c === 2) {
         const chg = q?.changePct
@@ -403,6 +429,16 @@ export default function App() {
     setSheets((prev) => [...prev, { id, name, symbols: [] }])
     setActiveSheet(id)
   }
+  function deleteSheet(id: string) {
+    const idx = sheets.findIndex((s) => s.id === id)
+    if (idx < 0 || sheets.length <= 1) return
+    const next = sheets.filter((s) => s.id !== id)
+    setSheets(next)
+    if (activeSheet === id) {
+      setActiveSheet(next[Math.max(0, idx - 1)].id)
+    }
+  }
+
   function commitRename(id: string, val: string) {
     const v = val.trim()
     setRenameId(null)
@@ -469,7 +505,7 @@ export default function App() {
     ? list.reduce((a, s) => a + (quotes[s]?.changePct ?? 0), 0) / list.length
     : 0
 
-  const colW = decoy ? [130, 122, 122, 122, 90] : [160, 110, 96]
+  const colW = decoy ? getDecoy(lang).colWidths : [160, 110, 96]
   const filename = decoy ? getDecoy(lang).filename : t('app.filename')
 
   // ---- tabs ----
@@ -501,6 +537,8 @@ export default function App() {
         onSort={() => onSortCol(sel.c)}
         onInsert={() => !decoy && setShowAdd(true)}
         onCond={() => setDataBars((v) => !v)}
+        onCoffee={() => setShowCoffee(true)}
+        onHelp={() => setShowHelp(true)}
       />
       <FormulaBar
         selRef={selRef}
@@ -564,6 +602,7 @@ export default function App() {
         onCommitRename={commitRename}
         onCancelRename={() => setRenameId(null)}
         onAddSheet={addSheet}
+        onDeleteSheet={deleteSheet}
       />
 
       <StatusBar
@@ -598,6 +637,9 @@ export default function App() {
           onAdd={addStock}
         />
       )}
+
+      {showCoffee && <CoffeeDialog onClose={() => setShowCoffee(false)} />}
+      {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
 
       <div className={'hint' + (hint ? ' show' : '')}>{renderHint(t('hint.bosskey'))}</div>
     </div>

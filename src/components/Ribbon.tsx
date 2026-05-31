@@ -61,9 +61,11 @@ interface RibbonHomeProps {
   onSort: () => void
   onInsert: () => void
   onCond: () => void
+  onCoffee: () => void
+  onHelp: () => void
 }
 
-export function RibbonHome({ onSort, onInsert, onCond }: RibbonHomeProps) {
+export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: RibbonHomeProps) {
   const { t } = useI18n()
   return (
     <div className="ribbon">
@@ -326,7 +328,7 @@ export function RibbonHome({ onSort, onInsert, onCond }: RibbonHomeProps) {
       </div>
 
       {/* Editing */}
-      <div className="rgroup" style={{ borderRight: 'none' }}>
+      <div className="rgroup">
         <div className="rgroup-body">
           <div className="rmini">
             <div className="ribtn" title="자동 합계" style={{ fontWeight: 700, color: '#107C41' }}>
@@ -359,6 +361,23 @@ export function RibbonHome({ onSort, onInsert, onCond }: RibbonHomeProps) {
           </div>
         </div>
         <div className="rgroup-label">{t('ribbon.group.editing')}</div>
+      </div>
+
+      {/* Support — pushed to far right */}
+      <div className="rgroup rgroup-support" style={{ marginLeft: 'auto', borderRight: 'none', borderLeft: '1px solid var(--line)' }}>
+        <div className="rgroup-body" style={{ gap: 4 }}>
+          <div className="rbtn big rib-coffee" onClick={onCoffee} title="Buy me a coffee">
+            <i className="fa-solid fa-mug-hot" style={{ fontSize: 28 }} />
+            <span className="lbl">Buy me<br />a coffee</span>
+          </div>
+          <div className="rbtn big" onClick={onHelp} title="Help & Feedback">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+            </svg>
+            <span className="lbl">Help &<br />Feedback</span>
+          </div>
+        </div>
+        <div className="rgroup-label">Support</div>
       </div>
     </div>
   )

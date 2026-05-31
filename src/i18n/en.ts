@@ -1,10 +1,10 @@
 /** English strings (canonical key set). ko.ts must mirror these keys. */
 export const en = {
   // Window / title bar
-  'app.filename': 'My_Assets_2026.xlsx',
+  'app.filename': 'Budget_Review_2026.xlsx',
   'app.suffix': 'Excel',
   'titlebar.searchHint': 'Search stocks',
-  'titlebar.account': 'Min-jun Kim',
+  'titlebar.account': 'James Kim',
   'titlebar.lang': 'KO', // label of the toggle = the language you switch TO
 
   // Ribbon tabs
@@ -53,6 +53,8 @@ export const en = {
   'sheet.fav': 'Watchlist',
   'sheet.newTab': 'New sheet',
   'sheet.add': 'New sheet',
+  'sheet.rename': 'Rename',
+  'sheet.delete': 'Delete',
 
   // Status bar
   'status.ready': 'Ready',
@@ -120,6 +122,28 @@ export const en = {
 
   // Formula bar
   'fbar.refresh': 'Refresh quotes',
+
+  // Grid placeholder
+  'grid.addHint': 'Add ticker here…',
+
+  // Coffee dialog
+  'coffee.title': 'Support the Developer',
+  'coffee.msg': 'Did you enjoy this project? If tracking your stocks with ExcelStock has been even a little useful — or just fun — a coffee would make my day and keep this project going 😄',
+  'coffee.btn': 'Buy Me a Coffee ☕',
+  'coffee.close': 'Maybe later',
+
+  // Help / feedback dialog
+  'help.title': 'Help & Feedback',
+  'help.subjectLabel': 'Subject',
+  'help.subjectPlaceholder': 'e.g. Feature request or bug report',
+  'help.bodyLabel': 'Message',
+  'help.bodyPlaceholder': 'Describe your request or issue in detail…',
+  'help.send': 'Send Email',
+  'help.cancel': 'Cancel',
+
+  // TitleBar extra buttons
+  'titlebar.coffee': 'Buy me a coffee',
+  'titlebar.help': 'Help & Feedback',
 } as const
 
 export type TranslationKey = keyof typeof en

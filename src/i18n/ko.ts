@@ -3,10 +3,10 @@ import type { TranslationKey } from './en'
 /** Korean strings. Keys mirror en.ts (enforced by the Record type). */
 export const ko: Record<TranslationKey, string> = {
   // Window / title bar
-  'app.filename': '내자산_관리_2026.xlsx',
+  'app.filename': '가계부_2026년.xlsx',
   'app.suffix': 'Excel',
   'titlebar.searchHint': '종목 검색',
-  'titlebar.account': '김민준',
+  'titlebar.account': '홍길동',
   'titlebar.lang': 'EN',
 
   // Ribbon tabs
@@ -55,6 +55,8 @@ export const ko: Record<TranslationKey, string> = {
   'sheet.fav': '관심',
   'sheet.newTab': '새 시트',
   'sheet.add': '새 시트',
+  'sheet.rename': '이름 바꾸기',
+  'sheet.delete': '삭제',
 
   // Status bar
   'status.ready': '준비',
@@ -122,4 +124,26 @@ export const ko: Record<TranslationKey, string> = {
 
   // Formula bar
   'fbar.refresh': '시세 새로 고침',
+
+  // Grid placeholder
+  'grid.addHint': '여기에 종목 추가…',
+
+  // Coffee dialog
+  'coffee.title': '개발자 응원하기',
+  'coffee.msg': '이 프로젝트가 재미있으셨나요? 주식 관리에 조금이라도 도움이 됐거나, 그냥 만드는 게 즐거우셨다면 — 커피 한 잔이 큰 힘이 됩니다 😄',
+  'coffee.btn': '커피 한 잔 사주기 ☕',
+  'coffee.close': '다음에요',
+
+  // Help / feedback dialog
+  'help.title': '도움말 및 피드백',
+  'help.subjectLabel': '제목',
+  'help.subjectPlaceholder': '예: 기능 요청 또는 버그 신고',
+  'help.bodyLabel': '내용',
+  'help.bodyPlaceholder': '요청 사항이나 불편한 점을 자세히 알려주세요…',
+  'help.send': '이메일 보내기',
+  'help.cancel': '취소',
+
+  // TitleBar extra buttons
+  'titlebar.coffee': '커피 한 잔 사주기',
+  'titlebar.help': '도움말 및 피드백',
 }
