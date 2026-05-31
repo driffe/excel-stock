@@ -4,6 +4,7 @@
 // mode under Finnhub's free-tier rate limit. Module state persists across requests
 // in a warm process (Vite dev server; warm Vercel function instance).
 import { buildServerQuoteProvider } from './providers.js'
+import { getStooqQuoteCached, SHARED_SYMBOLS } from './stooqQuotes.js'
 import type { QuoteProvider } from '../api/provider.js'
 import type { Quote } from '../types.js'
 
@@ -21,6 +22,15 @@ function getProvider(env: Env): QuoteProvider {
 
 export async function getQuoteCached(env: Env, symbol: string): Promise<Quote> {
   const key = symbol.toUpperCase()
+
+  // Shared default-watchlist symbols (the viral 95%) go through Stooq's keyless
+  // batch, so quota stays constant under a spike regardless of viewer count. Only
+  // fall through to the per-symbol Finnhub path if Stooq has no price for it.
+  if (SHARED_SYMBOLS.has(key)) {
+    const stooq = await getStooqQuoteCached(key).catch(() => null)
+    if (stooq && stooq.price != null) return stooq
+  }
+
   const now = Date.now()
 
   const hit = cache.get(key)

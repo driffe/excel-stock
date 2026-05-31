@@ -542,6 +542,27 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
+  // ---- auto-conceal ----
+  // The reflexive hide: the instant the window loses focus or the tab is hidden
+  // (alt-tab, app switch, or you stepping away from the desk), flip to the decoy
+  // budget sheet. We only ever CONCEAL — revealing stays a deliberate act (the boss
+  // key), so an unattended screen never flips back to stocks on its own.
+  useEffect(() => {
+    const conceal = () => {
+      setDecoy(true)
+      setOpenFilter(null)
+    }
+    const onVisibility = () => {
+      if (document.hidden) conceal()
+    }
+    window.addEventListener('blur', conceal)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('blur', conceal)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [])
+
   // ---- derived display values ----
   const selRef = colName(sel.c) + (sel.r + 1)
   const sortCur = sortState[activeSheet]
