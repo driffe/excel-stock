@@ -98,6 +98,7 @@ export default function App() {
   const [showCoffee, setShowCoffee] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const [splitPct, setSplitPct] = useState(35)
+  const [mobileSplitPct, setMobileSplitPct] = useState(55)
   const midrowRef = useRef<HTMLDivElement>(null)
 
   const isFav = !decoy && activeSheet === FAV_SHEET_ID
@@ -412,6 +413,24 @@ export default function App() {
     window.addEventListener('mouseup', onUp)
   }
 
+  // ---- split handle touch drag (mobile vertical) ----
+  function onHandleTouchStart(e: React.TouchEvent) {
+    e.preventDefault()
+    const startY = e.touches[0].clientY
+    const startPct = mobileSplitPct
+    const totalH = midrowRef.current?.offsetHeight ?? 1
+    function onMove(ev: TouchEvent) {
+      const newPct = Math.min(85, Math.max(15, startPct + ((ev.touches[0].clientY - startY) / totalH) * 100))
+      setMobileSplitPct(newPct)
+    }
+    function onEnd() {
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onEnd)
+    }
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onEnd)
+  }
+
   // ---- refresh ----
   function doRefresh() {
     if (decoy) return
@@ -536,7 +555,8 @@ export default function App() {
     ? list.reduce((a, s) => a + (quotes[s]?.changePct ?? 0), 0) / list.length
     : 0
 
-  const colW = decoy ? getDecoy(lang).colWidths : [160, 110, 96]
+  const isMobile = window.innerWidth <= 640
+  const colW = decoy ? getDecoy(lang).colWidths : [160, isMobile ? 88 : 110, 96]
   const filename = decoy ? getDecoy(lang).filename : t('app.filename')
 
   // ---- tabs ----
@@ -580,7 +600,7 @@ export default function App() {
         error={!decoy && quotesError}
       />
       <div className="midrow" ref={midrowRef}>
-        <div style={{ flex: showNews && !decoy ? `0 0 ${splitPct}%` : 1, display: 'flex', minWidth: 0 }}>
+        <div className="grid-col" style={{ flex: showNews && !decoy ? `0 0 ${isMobile ? mobileSplitPct : splitPct}%` : 1, display: 'flex', minWidth: 0 }}>
           <Grid
             totalCols={TOTAL_COLS}
             totalRows={totalRows}
@@ -610,8 +630,8 @@ export default function App() {
         </div>
         {showNews && !decoy && (
           <>
-            <div className="split-handle" onMouseDown={onHandleMouseDown} />
-            <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
+            <div className="split-handle" onMouseDown={onHandleMouseDown} onTouchStart={onHandleTouchStart} />
+            <div className="news-col" style={{ flex: 1, display: 'flex', minWidth: 0 }}>
               <NewsPane
                 indices={indices}
                 news={news}

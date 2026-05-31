@@ -27,9 +27,11 @@ type Row =
   | { type: 'blank' }
   | { type: 'row'; wrapRow?: boolean; cells: Cell[] }
 
-const NCOL = 7
-// headline/summary use unconstrained fr so they shrink before fixed right columns get cut off.
-const TMPL = '30px 56px 72px 1.5fr 0.9fr 92px 72px 58px'
+const NCOL_DESKTOP = 7
+const TMPL_DESKTOP = '30px 56px 72px 1.5fr 0.9fr 92px 72px 58px'
+// Mobile: headline | summary | link only (indices section hidden)
+const NCOL_MOBILE = 3
+const TMPL_MOBILE = '24px 1.5fr 0.9fr 76px'
 
 function isSafeUrl(url: string): boolean {
   try {
@@ -54,44 +56,51 @@ export default function NewsPane({
   onRefresh,
 }: NewsPaneProps) {
   const { t } = useI18n()
-  const [sel, setSel] = useState({ r: 9, c: 5 })
+  const isMobile = window.innerWidth <= 640
+  const NCOL = isMobile ? NCOL_MOBILE : NCOL_DESKTOP
+  const TMPL = isMobile ? TMPL_MOBILE : TMPL_DESKTOP
+  const [sel, setSel] = useState({ r: 0, c: 0 })
 
   const rows: Row[] = []
-  rows.push({ type: 'section', text: t('news.sectionIndices') })
-  rows.push({
-    type: 'th',
-    cells: [t('news.idx.index'), t('news.idx.value'), t('news.idx.change'), '', '', '', ''],
-  })
-  indices.forEach((x) => {
+  if (!isMobile) {
+    rows.push({ type: 'section', text: t('news.sectionIndices') })
     rows.push({
-      type: 'row',
-      cells: [
-        { t: t(('index.' + x.key) as TranslationKey) },
-        {
-          t: x.value.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 }),
-          num: true,
-        },
-        { t: fmtChange(x.changePct), num: true, cls: x.changePct >= 0 ? 'up' : 'down' },
-        { t: '' },
-        { t: '' },
-        { t: '' },
-        { t: '' },
-      ],
+      type: 'th',
+      cells: [t('news.idx.index'), t('news.idx.value'), t('news.idx.change'), '', '', '', ''],
     })
-  })
-  rows.push({ type: 'blank' })
+    indices.forEach((x) => {
+      rows.push({
+        type: 'row',
+        cells: [
+          { t: t(('index.' + x.key) as TranslationKey) },
+          {
+            t: x.value.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 }),
+            num: true,
+          },
+          { t: fmtChange(x.changePct), num: true, cls: x.changePct >= 0 ? 'up' : 'down' },
+          { t: '' },
+          { t: '' },
+          { t: '' },
+          { t: '' },
+        ],
+      })
+    })
+    rows.push({ type: 'blank' })
+  }
   rows.push({ type: 'section', text: t('news.sectionNews') })
   rows.push({
     type: 'th',
-    cells: [
-      t('news.col.ticker'),
-      t('news.col.change'),
-      t('news.col.headline'),
-      t('news.col.summary'),
-      t('news.col.link'),
-      t('news.col.source'),
-      t('news.col.time'),
-    ],
+    cells: isMobile
+      ? [t('news.col.headline'), t('news.col.summary'), t('news.col.link')]
+      : [
+          t('news.col.ticker'),
+          t('news.col.change'),
+          t('news.col.headline'),
+          t('news.col.summary'),
+          t('news.col.link'),
+          t('news.col.source'),
+          t('news.col.time'),
+        ],
   })
   if (news.length === 0) {
     rows.push({ type: 'section', text: loading ? t('news.loading') : t('news.empty') })
@@ -99,20 +108,19 @@ export default function NewsPane({
   news.forEach((n) => {
     const tk = n.related[0]
     const chg = tk ? quotes[tk]?.changePct ?? null : null
+    const allCells: Cell[] = [
+      { t: tk || '—' },
+      chg != null ? { t: fmtChange(chg), num: true, cls: chg >= 0 ? 'up' : 'down' } : { t: '' },
+      { t: n.headline, wrap: true },
+      { t: n.summary, cls: 'sumcell', wrap: true },
+      { link: n.url },
+      { t: n.source, wrap: true },
+      { t: relTime(n.datetime, t) },
+    ]
     rows.push({
       type: 'row',
       wrapRow: true,
-      cells: [
-        { t: tk || '—' },
-        chg != null
-          ? { t: fmtChange(chg), num: true, cls: chg >= 0 ? 'up' : 'down' }
-          : { t: '' },
-        { t: n.headline, wrap: true },
-        { t: n.summary, cls: 'sumcell', wrap: true },
-        { link: n.url },
-        { t: n.source, wrap: true },
-        { t: relTime(n.datetime, t) },
-      ],
+      cells: isMobile ? [allCells[2], allCells[3], allCells[4]] : allCells,
     })
   })
   while (rows.length < 40) rows.push({ type: 'blank' })
@@ -134,7 +142,7 @@ export default function NewsPane({
     )
     if (row.type === 'section') {
       els.push(
-        <div key={'s' + r} className="gcell cellfont np-section" style={{ gridColumn: 'span 7' }}>
+        <div key={'s' + r} className="gcell cellfont np-section" style={{ gridColumn: `span ${NCOL}` }}>
           {row.text}
         </div>,
       )
