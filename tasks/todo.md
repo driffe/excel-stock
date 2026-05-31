@@ -82,5 +82,71 @@
 - 리본/툴바 버튼 실제 동작(장식), 뉴스 본문 한국어 자동 번역(번역 서비스 미도입).
 
 ---
+## Phase 3 — 런칭 하드닝 (바이럴 스파이크 생존) [진행중]
+
+**전략 맥락**: 목표 = 바이럴/성장 플레이, 페르소나 = 가벼운 체커, 베팅 = 위장 깊이 + Stealth 알림,
+런칭 채널 = ② 서사(Show HN/Reddit, 오픈소스). 첫 스프린트 = **데이터층 하드닝**(깨지는 데모로 런칭 = 자살).
+
+**핵심 문제**: Show HN/Reddit 스파이크 → 동시 수백 명 × 서버리스 콜드스타트 → 인스턴스별 캐시가 전부
+미스 → Finnhub 무료 티어(~60/min) 폭사 → 가장 많이 보는 순간 가격이 전부 `—`. 엣지 캐싱은 per-POP라
+단독으론 60/min 못 넘김. **진짜 해법 = 공유 기본 워치리스트를 유저 트래픽에서 분리해 쿼터를 상수로.**
+
+**검증 완료**: Stooq 키 없는 light-quote CSV가 US 주식 전체를 **단일 배치 콜**로 커버
+(AAPL/MSFT/NVDA/BRK-B/JPM OHLC+Vol+Name 확인). 기본 시트 ~30종목 = origin 1콜/윈도우, 유저 수 무관.
+트레이드오프: ~15분 지연 + changePct가 종가-대비-시가(Finnhub 실시간과 의미 약간 다름) — 런칭 모드엔 허용.
+
+### 체크리스트
+- [x] 1. **Stooq 배치 시세 소스** — `src/server/stooqQuotes.ts`: 심볼 배열 → `s=aapl.us+...` 한 콜,
+      CSV 파싱(BRK.B→brk-b.us 매핑), `Quote`로 정규화(changePct=종가vs시가, prevClose=null), TTL 캐시
+      +coalescing. 유니버스를 DEFAULT_SHEETS로 시드 → 첫 refresh가 전 기본심볼을 한 배치로(동시 단일-심볼
+      요청이 1콜로 합쳐지게). 유저 추가 심볼은 유니버스에 누적(MAX_TRACKED=500 캡). QUOTE_TTL_MS env 다이얼.
+      - **검증(라이브 Stooq)**: 기본 30종목(NASDAQ/NYSE/ETF/holdings, BRK.B·SPY 포함) 30/30 단일 배치 805ms.
+        30개 동시 콜드 단일-심볼 읽기 → **업스트림 콜 정확히 1회**, 웜 2회차 → 신규 0, 유저심볼(IBM) 정상.
+        typecheck 통과.
+- [x] 2. **서버 시세 라우팅** (A안) — `quoteCache.getQuoteCached`가 `SHARED_SYMBOLS`(기본 워치리스트)면
+      Stooq 캐시(`getStooqQuoteCached`)에서 먼저, 가격 없거나 Stooq 실패 시에만 기존 Finnhub 경로로 폴백.
+      유저 추가 임의 심볼은 Stooq 미경유 → Finnhub 온디맨드(실시간 유지, per-IP 레이트리밋 bound).
+      → 95% 바이럴 트래픽(기본 뷰)이 Finnhub를 안 건드림. 쿼터 = (심볼수 × 갱신율), 유저 무관.
+      - **검증**: 기본 30종목 동시 → Stooq 배치 1콜(AAPL 312.06, prevClose=null), 유저심볼 IBM → Stooq 0콜·
+        폴백 프로바이더(mock walk, prevClose=265). typecheck 통과.
+- [x] 3. **엣지 CDN 캐싱(곱셈기)** — `api/{quote,news,indices}.ts` `send()`에 cache-control 인자 추가.
+      200엔 `public, s-maxage=<TTL>, stale-while-revalidate=<win>` (quote 30/120, news 45/180, indices 30/120),
+      비-200(400/403/429/502)·guard 거부는 `no-store`. news는 `lang/type/symbols`가 이미 쿼리 파라미터
+      → CDN 캐시 키에 포함(헤더 Vary 불필요, 오언어 서빙 방지). 캐시 히트 시 guard 우회는 공개 시세라 무해.
+      - **검증(dev 서버 실 응답 헤더)**: quote 200=s-maxage=30 + Stooq 312.06, quote 400=no-store,
+        indices 200=s-maxage=30, news?lang=ko 200=s-maxage=45 + 한국어 Naver 정상.
+- [x] 4. **스파이크 다이얼** — `QUOTE_TTL_MS` env가 Stooq 업스트림 TTL을 제어(상수-쿼터 핵심 레버, 구현됨).
+      엣지 s-maxage는 정적값(곱셈기) — 필요 시 env화 가능하나 업스트림 TTL이 부하를 bound하므로 충분. DEPLOY.md에 문서화.
+- [x] 5. **런칭 하드닝 문서** — `DEPLOY.md`에 "Launch hardening" 섹션 + 사전 체크리스트
+      (`ALLOWED_ORIGIN` 강제, 스파이크 시 `QUOTE_TTL_MS` 상향, 프리뷰 가격 스모크테스트, 선택적 KV 한정자).
+      env 테이블에 `QUOTE_TTL_MS` 행 추가, `.env.example`에 문서화.
+
+- [x] 6. **change% 충실도 수정 (advisor 지적)** — 초기엔 Stooq에 전일종가가 없다고 보고 changePct를
+      "종가 vs 시가"로 계산 → Yahoo/Google과 어긋나고(부호 뒤집힘 가능), 기본행(Stooq)·유저행(Finnhub)이
+      같은 그리드에서 기준 불일치. **light-quote `p` 필드(전일종가)를 발견** → `f=sohlcp` 단일 배치 키 없는
+      콜에서 전일종가 공짜로 획득. changePct를 **전일종가 기준**으로 변경 → Finnhub·Yahoo와 기준 통일.
+      (Stooq 일별-히스토리 엔드포인트는 이제 API 키 필요 — `p` 필드가 keyless 해법.)
+
+### 검증 결과
+- `npm run typecheck` ✅ / `npm run build` ✅ (61 modules).
+- Stooq 배치 라이브: 기본 30종목(BRK.B·ETF 포함) 30/30 단일 콜, 30 동시 콜드 읽기 → 업스트림 **정확히 1콜**.
+- 라우팅: 기본심볼→Stooq, 유저심볼(IBM)→폴백 프로바이더, Stooq 0콜.
+- **change% 수정 검증**: AAPL +0.09%(vs open) → **-0.14%(vs prevClose, Yahoo와 일치, 부호 플립 해결)**,
+  MSFT 4.09%→5.45%(1.36%p 괴리 교정), prevClose 전 종목 채워짐.
+- dev 실 응답: quote/indices/news 200=`s-maxage`, 에러=`no-store`, news lang은 URL 키.
+- **헤드리스 Chrome 렌더(라이브 모드)**: `/api/quote` 30×200, 콘솔 에러 0, 그리드 셀에 실 Stooq 가격+전일종가
+  change% 표시(NVDA $211.14 -1.45% / AAPL $312.06 -0.14% / MSFT +5.45%), 엑셀 룩 시각 무결성 OK.
+- 클라이언트 번들에 `stooq.com`/finnhub URL 0 (서버 전용 트리셰이크), 키 노출 0.
+
+### 런칭 전 잔여 검증 (오늘 불가 — 일요일/프리뷰 미배포; DEPLOY.md 체크리스트에 명시)
+- 프리뷰 배포에서 엣지 캐시 실동작(`x-vercel-cache: HIT`, `s-maxage` 적용) — dev 서버엔 CDN 없음.
+- 평일 장중 세션에서 Stooq 인트라데이 지연/주기 + change%가 Yahoo와 일치하는지 라이브 확인.
+- 프로덕션 `ALLOWED_ORIGIN` 설정(오픈 프록시 차단), 스파이크 시 `QUOTE_TTL_MS` 상향.
+
+### 비범위(이번 스프린트)
+- Vercel KV/Upstash/Cron 도입(Stooq 분리로 불필요 — 추후 옵션). hero GIF/alt-tab 자동 decoy(다음 스프린트).
+  in-app 공유 버튼/K-factor(①, 런칭 후). 오픈소스 공개 작업(README/LICENSE 정리)은 별도.
+
+---
 ## 이전 단계 (Phase 1 — 구글시트 위장 포트폴리오, 본 단계로 대체됨)
 > Phase 1은 구글시트 크롬 + 보유수량/평가손익 8열 포트폴리오였으며, 사용자 요청으로 엑셀 워치리스트로 전면 교체됨.

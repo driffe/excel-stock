@@ -154,3 +154,32 @@ Patterns captured after user corrections / verification gaps, per CLAUDE.md "Sel
 - Type the non-default dictionary as `Record<keyof typeof en, string>` so missing/extra keys fail
   typecheck — keeps EN/KO in lockstep. Dynamic keys (e.g. `'index.' + key`) need an explicit
   `as TranslationKey` cast.
+
+## Data-layer hardening for a viral spike (Phase 3)
+
+- **Constant quota beats clever caching.** The launch-killer was Finnhub's free
+  60/min dying under a spike. Cache topology (memory=per-instance, CDN=per-PoP,
+  Redis=global) is the wrong axis to optimize — the right move was changing the
+  *source* for the shared default watchlist to **Stooq** (keyless, batched: ~30
+  symbols in one CSV call), so upstream load = (symbols ÷ TTL), independent of
+  viewer count. Edge `s-maxage`+`stale-while-revalidate` is a multiplier on top, not
+  the fix. Route arbitrary user-added symbols to Finnhub (real-time, rate-limited).
+- **Coalescing must refresh a fixed universe, not the caller's symbol.** The client
+  polls one `/api/quote?symbol=X` per symbol, so the server sees N concurrent
+  single-symbol calls. A naive single-flight that fetches only the first caller's
+  symbol starves the other N−1. Seed the universe from `DEFAULT_SHEETS` and have the
+  first refresh batch the whole set; the rest await the same in-flight promise. A
+  weak test assertion (`size >= 0`) hid this — assert real data + count upstream
+  calls (wrap `globalThis.fetch`).
+- **A disclosed tradeoff is not an accepted one — quantify, and probe for a better
+  field first.** I shipped changePct as "vs session open" (no prev close) and got a
+  nod, but the advisor pushed to quantify: AAPL was +0.09% vs-open but −0.14%
+  vs-prev-close — a **sign flip** vs Yahoo/Google, and the grid mixed two bases
+  (Stooq defaults vs Finnhub user rows). Fix: Stooq's light quote *does* expose prev
+  close via the **`p` field** (`f=sohlcp` → `Symbol,Open,High,Low,Close,Prev`), in
+  the same keyless batch. (The daily-history endpoint now requires an API key, so
+  `p` is the keyless path.) Always probe the source's field list before accepting a
+  "the API doesn't have X" limitation.
+- **`waitUntil:'networkidle'` hangs on a polling app** — quote polling never lets
+  the network idle. Use `domcontentloaded` + a fixed `waitForTimeout` for the first
+  paint, then assert cell text.

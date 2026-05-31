@@ -16,6 +16,7 @@ The app talks to external APIs only through same-origin `/api/*` proxy endpoints
 | `NAVER_CLIENT_SECRET` | KO news | **Secret** — server-side only. |
 | `ALLOWED_ORIGIN` | **recommended** | Lock `/api/*` to your deploy URL (e.g. `https://your-app.vercel.app`). Without it the proxy is open to the world. |
 | `RATE_LIMIT_PER_MIN` | optional | Per-IP cap on `/api/*` (default 240). |
+| `QUOTE_TTL_MS` | optional | Stooq snapshot TTL for shared default symbols (default 30000). The spike dial — raise it during a launch to cut upstream load further. |
 
 Only set the keys for the sources you use; the proxy enables each source whose
 key(s) are present and falls back to mock/empty otherwise.
@@ -48,6 +49,48 @@ Node req/res, so dev and prod run the identical handler.
   modules — identical behavior to production.
 - **Prod**: Vercel runs `api/quote.ts` / `api/news.ts` as functions, reading the
   dashboard env vars.
+
+## Launch hardening (surviving a viral spike)
+
+A Show HN / Reddit spike sends hundreds of concurrent viewers at the **default
+watchlist**. The data layer is built so upstream load stays **constant regardless
+of viewer count** — the live prices won't break at the worst moment:
+
+- **Shared default symbols → Stooq's keyless batch.** Every default-watchlist
+  symbol (`SHARED_SYMBOLS`, seeded from `data/sheets.ts`) is served by one batched,
+  keyless Stooq request (`src/server/stooqQuotes.ts`), TTL-cached and
+  request-coalesced. Upstream load ≈ (distinct symbols ÷ `QUOTE_TTL_MS`), **not ×
+  viewers**. The batch includes the previous close (`p` field), so change % is vs.
+  **previous close** — the same basis as Finnhub and Yahoo/Google, so default and
+  user-added rows stay consistent. Trade-off: Stooq is ~15 min delayed (acceptable
+  for the casual-checker launch view); **verify the intraday delay/cadence on a live
+  weekday session** before treating it as launch-ready.
+- **User-added symbols → Finnhub** on-demand (real-time), bounded by the per-IP
+  rate limit. Stooq is the fallback if Finnhub is absent/errors.
+- **Edge/CDN caching.** `/api/{quote,news,indices}` send
+  `Cache-Control: public, s-maxage=…, stale-while-revalidate=…` on OK responses, so
+  the CDN absorbs repeat requests per PoP without re-invoking the function; errors
+  are `no-store`. This is a multiplier on top of the constant-quota source.
+
+**Pre-launch checklist:**
+
+1. **Set `ALLOWED_ORIGIN`** to your deploy URL — closes the open proxy so nobody
+   can drain your Finnhub quota by hitting `/api/*` directly.
+2. **Raise `QUOTE_TTL_MS`** (e.g. 60000) for the launch window to cut upstream load
+   further; lower it back afterward.
+3. **Smoke-test live prices** on a preview deploy (`/api/quote?symbol=AAPL` returns a
+   price; the default grid fills) — the hero demo depends on prices being live.
+4. Optional: front `/api/*` with a managed limiter (Vercel KV / Upstash) if you
+   expect abuse beyond the in-memory backstop.
+
+**Verify on a preview deploy before the real launch** (these can't be checked from
+the Vite dev server, which has no CDN, or on a weekend with frozen data):
+
+- **Edge cache is live:** `curl -sI <preview>/api/quote?symbol=AAPL` shows
+  `cache-control: ... s-maxage=…`, and a second identical request is served from the
+  CDN (Vercel `x-vercel-cache: HIT`) without re-invoking the function.
+- **Live market-hours behavior:** during a weekday session, confirm the default grid
+  updates on the Stooq cadence and the change % matches Yahoo/Google for a few names.
 
 ## Security notes
 

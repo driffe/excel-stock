@@ -17,9 +17,15 @@ interface Res {
   end(body: string): void
 }
 
-function send(res: Res, status: number, contentType: string, body: string) {
+// Edge/CDN cache for OK responses. The cache key is the full URL, and language /
+// type / symbols all ride as query params (?lang=ko&type=…&symbols=…), so the CDN
+// never serves wrong-language or wrong-scope news. Errors are never cached.
+const OK_CACHE = 'public, s-maxage=45, stale-while-revalidate=180'
+
+function send(res: Res, status: number, contentType: string, body: string, cache = 'no-store') {
   res.statusCode = status
   res.setHeader('content-type', contentType)
+  res.setHeader('cache-control', cache)
   res.end(body)
 }
 
@@ -38,7 +44,7 @@ export default async function handler(req: Req, res: Res) {
 
   try {
     const items = await getNewsCached(process.env, type, lang, symbols)
-    send(res, 200, 'application/json', JSON.stringify(items))
+    send(res, 200, 'application/json', JSON.stringify(items), OK_CACHE)
   } catch (e) {
     const msg = process.env.NODE_ENV === 'development' ? String(e) : 'upstream error'
     send(res, 502, 'application/json', JSON.stringify({ error: msg }))

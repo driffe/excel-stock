@@ -18,9 +18,15 @@ interface Res {
   end(body: string): void
 }
 
-function send(res: Res, status: number, contentType: string, body: string) {
+// Edge/CDN cache for OK responses: collapse a spike at the PoP so repeated
+// same-symbol requests don't re-invoke the function. stale-while-revalidate keeps
+// cells populated during the background refresh. Errors/rejections are never cached.
+const OK_CACHE = 'public, s-maxage=30, stale-while-revalidate=120'
+
+function send(res: Res, status: number, contentType: string, body: string, cache = 'no-store') {
   res.statusCode = status
   res.setHeader('content-type', contentType)
+  res.setHeader('cache-control', cache)
   res.end(body)
 }
 
@@ -33,7 +39,7 @@ export default async function handler(req: Req, res: Res) {
 
   try {
     const quote = await getQuoteCached(process.env, symbol)
-    send(res, 200, 'application/json', JSON.stringify(quote))
+    send(res, 200, 'application/json', JSON.stringify(quote), OK_CACHE)
   } catch (e) {
     const msg = process.env.NODE_ENV === 'development' ? String(e) : 'upstream error'
     send(res, 502, 'application/json', JSON.stringify({ error: msg }))
