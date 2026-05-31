@@ -144,8 +144,23 @@
 - 프로덕션 `ALLOWED_ORIGIN` 설정(오픈 프록시 차단), 스파이크 시 `QUOTE_TTL_MS` 상향.
 
 ### 비범위(이번 스프린트)
-- Vercel KV/Upstash/Cron 도입(Stooq 분리로 불필요 — 추후 옵션). hero GIF/alt-tab 자동 decoy(다음 스프린트).
+- Vercel KV/Upstash/Cron 도입(Stooq 분리로 불필요 — 추후 옵션).
   in-app 공유 버튼/K-factor(①, 런칭 후). 오픈소스 공개 작업(README/LICENSE 정리)은 별도.
+
+---
+## Phase 4 — 위장 깊이: alt-tab 자동 은폐 (hero clip 기능) [진행중]
+
+**맥락**: 바이럴 hero 클립의 핵심 — "alt-tab 하면 즉시 예산표로". 기존 보스키(백틱) decoy에 연결.
+
+- [x] **자동 은폐 효과** (`App.tsx`) — `window blur` + `document visibilitychange(hidden)` → `setDecoy(true)`
+      + 필터 닫기. **은폐 전용**: 포커스/가시성 복귀 시 자동 공개 안 함 — 공개는 백틱으로만(의도적).
+      자리 비운 새 동료가 화면 봐도 예산표 유지가 목적. 리스너는 1회 arm(키 핸들러 패턴과 동일).
+      - **검증(헤드리스 Chrome)**: 초기=주식+뉴스, blur→탭제목 decoy 파일명+뉴스 숨김(은폐),
+        focus 복귀→은폐 유지(자동공개 X), 백틱→주식+뉴스 복귀. 콘솔 에러 0. build ✅.
+
+### 후속 후보
+- 자동 은폐 on/off 설정(너무 공격적일 때) — 현재 기본 on, 토글 미구현.
+- 다음: stealth 알림(위장된 노티), hero GIF 녹화/공유, 런칭 서사+오픈소스.
 
 ---
 ## 이전 단계 (Phase 1 — 구글시트 위장 포트폴리오, 본 단계로 대체됨)
