@@ -6,8 +6,9 @@ It's a real-time tracker wearing an Excel 365 costume: column letters, the green
 
 > ⚠️ A fun side project, not investment advice. Quotes can be delayed — don't trade on them.
 
-<!-- TODO: drop the hero clip here — the reveal → alt-tab → budget-sheet swap. This GIF is the launch. -->
-<!-- ![demo](docs/demo.gif) -->
+<p align="center">
+  <img src="demo/demo.gif" alt="Live stock watchlist that conceals itself as an Excel budget sheet" width="820">
+</p>
 
 ## The trick
 
@@ -16,6 +17,10 @@ It's a real-time tracker wearing an Excel 365 costume: column letters, the green
 - **Disguised by default.** Even the browser tab title and favicon read as an `.xlsx` file.
 
 ## What it actually does
+
+<p align="center">
+  <img src="demo/screen.png" alt="The watchlist grid with a live news pane and a real index strip" width="820">
+</p>
 
 - **Live watchlist** in a spreadsheet grid — inline edit the ticker column, keyboard nav, favorites (★) auto-build a watchlist sheet. Default sheets: NASDAQ-10, NYSE-10, ETFs, holdings.
 - **Real index strip** (S&P 500 / Nasdaq / Dow) and a **live news pane**.
