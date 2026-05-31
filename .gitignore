@@ -12,3 +12,9 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 *.log
+
+# TS build cache
+*.tsbuildinfo
+
+# Internal working docs (planning, lessons, launch copy)
+tasks/
