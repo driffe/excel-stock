@@ -4,8 +4,8 @@
 // three; results are TTL-cached. `changePct` is the intraday move (close vs open)
 // since the keyless endpoint doesn't expose the previous close. Falls back to the
 // seed levels if Stooq is unavailable, so the strip always shows something.
-import type { IndexQuote } from '../types'
-import { INDEX_SEEDS } from '../data/indices'
+import type { IndexQuote } from '../types.js'
+import { INDEX_SEEDS } from '../data/indices.js'
 
 const TTL_MS = 30_000
 const STOOQ_URL = 'https://stooq.com/q/l/?s=^spx+^ndq+^dji&f=sohlc&h&e=csv'

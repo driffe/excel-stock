@@ -2,9 +2,9 @@
 // /api/news composes several upstreams on each call, so without this every hit
 // fans out to Finnhub/Marketaux/Naver — the cheapest endpoint to abuse. A short
 // TTL keyed by (type, lang, symbols) collapses repeated/overlapping polls.
-import { buildServerNewsProvider } from './providers'
-import type { NewsProvider } from '../api/news'
-import type { Lang, NewsItem } from '../types'
+import { buildServerNewsProvider } from './providers.js'
+import type { NewsProvider } from '../api/news.js'
+import type { Lang, NewsItem } from '../types.js'
 
 type Env = Record<string, string | undefined>
 

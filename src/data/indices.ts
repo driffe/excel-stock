@@ -1,4 +1,4 @@
-import type { IndexQuote } from '../types'
+import type { IndexQuote } from '../types.js'
 
 /**
  * Initial / fallback values for the news-pane indices strip (■ Major Indices).

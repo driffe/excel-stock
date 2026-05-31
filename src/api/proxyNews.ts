@@ -1,5 +1,5 @@
-import type { NewsProvider } from './news'
-import type { Lang, NewsItem } from '../types'
+import type { NewsProvider } from './news.js'
+import type { Lang, NewsItem } from '../types.js'
 
 /**
  * Client news provider for live mode. Calls the same-origin `/api/news` proxy,

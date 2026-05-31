@@ -1,5 +1,5 @@
-import type { NewsProvider } from './news'
-import type { NewsItem } from '../types'
+import type { NewsProvider } from './news.js'
+import type { NewsItem } from '../types.js'
 
 interface MarketauxEntity {
   symbol: string

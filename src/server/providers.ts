@@ -4,15 +4,15 @@
 // existing local .env keeps working in dev). Pure code (no node-only APIs), so it
 // type-checks under the app config and tree-shakes out of the client bundle since
 // nothing client-reachable imports it.
-import type { QuoteProvider } from '../api/provider'
-import type { NewsProvider } from '../api/news'
-import { MockProvider } from '../api/mock'
-import { FinnhubProvider } from '../api/finnhub'
-import { MockNewsProvider } from '../api/news'
-import { FinnhubNewsProvider } from '../api/finnhubNews'
-import { MarketauxNewsProvider } from '../api/marketauxNews'
-import { NaverNewsProvider } from '../api/naverNews'
-import { CompositeNewsProvider, type TaggedNewsProvider } from '../api/compositeNews'
+import type { QuoteProvider } from '../api/provider.js'
+import type { NewsProvider } from '../api/news.js'
+import { MockProvider } from '../api/mock.js'
+import { FinnhubProvider } from '../api/finnhub.js'
+import { MockNewsProvider } from '../api/news.js'
+import { FinnhubNewsProvider } from '../api/finnhubNews.js'
+import { MarketauxNewsProvider } from '../api/marketauxNews.js'
+import { NaverNewsProvider } from '../api/naverNews.js'
+import { CompositeNewsProvider, type TaggedNewsProvider } from '../api/compositeNews.js'
 
 type Env = Record<string, string | undefined>
 

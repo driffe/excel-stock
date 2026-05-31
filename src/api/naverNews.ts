@@ -1,6 +1,6 @@
-import type { NewsProvider } from './news'
-import type { NewsItem } from '../types'
-import { lookupName } from './names'
+import type { NewsProvider } from './news.js'
+import type { NewsItem } from '../types.js'
+import { lookupName } from './names.js'
 
 interface NaverItem {
   title: string

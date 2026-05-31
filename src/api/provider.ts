@@ -1,4 +1,4 @@
-import type { Quote } from '../types'
+import type { Quote } from '../types.js'
 
 /**
  * A quote provider fetches the latest quote for a single ticker symbol.

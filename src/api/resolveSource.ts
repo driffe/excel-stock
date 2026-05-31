@@ -1,5 +1,5 @@
-import { mapPoolSettled } from '../lib/pool'
-import type { NewsItem } from '../types'
+import { mapPoolSettled } from '../lib/pool.js'
+import type { NewsItem } from '../types.js'
 
 /**
  * Finnhub's news `url` is a `finnhub.io/api/news?id=…` redirect and its `source`

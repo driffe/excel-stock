@@ -5,8 +5,8 @@
 // Node runtime invokes. The same handler runs in dev via the Vite middleware,
 // which passes Connect's Node req/res. Compiled by Vercel/Vite, not `tsc -b`.
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getQuoteCached } from '../src/server/quoteCache'
-import { guard } from '../src/server/guard'
+import { getQuoteCached } from '../src/server/quoteCache.js'
+import { guard } from '../src/server/guard.js'
 
 function send(res: ServerResponse, status: number, contentType: string, body: string) {
   res.statusCode = status
