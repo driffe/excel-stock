@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { onActivate } from '../lib/a11y'
 
 function I({ d }: { d: string }) {
   return (
@@ -26,19 +27,19 @@ export default function TitleBar({
   return (
     <div className="titlebar">
       <div className="tb-ico">X</div>
-      <div className="tb-qbtn" title="자동 저장">
+      <div className="tb-qbtn" title={t('tip.autosave')}>
         <svg viewBox="0 0 24 24">
           <circle cx="7" cy="12" r="4" fill="#fff" />
           <rect x="11" y="10" width="9" height="4" rx="2" fill="rgba(255,255,255,.5)" />
         </svg>
       </div>
-      <div className="tb-qbtn" title="저장">
+      <div className="tb-qbtn" title={t('tip.save')}>
         <I d="M5 3h11l3 3v15H5V3zm2 2v5h8V6.8L13.2 5H7zm3 9a2 2 0 100 4 2 2 0 000-4z" />
       </div>
-      <div className="tb-qbtn" title="실행 취소">
+      <div className="tb-qbtn" title={t('tip.undo')}>
         <I d="M8 7V4L3 9l5 5v-3h6a4 4 0 010 8H9v2h5a6 6 0 000-12H8z" />
       </div>
-      <div className="tb-qbtn" title="다시 실행">
+      <div className="tb-qbtn" title={t('tip.redo')}>
         <I d="M16 7V4l5 5-5 5v-3h-6a4 4 0 000 8h5v2h-5a6 6 0 010-12h6z" />
       </div>
       <div className="tb-sep" />
@@ -57,7 +58,15 @@ export default function TitleBar({
         />
       </div>
       <div className="tb-right">
-        <div className="tb-lang" onClick={toggleLang} title="Language / 언어">
+        <div
+          className="tb-lang"
+          role="button"
+          tabIndex={0}
+          aria-label={t('tip.lang')}
+          onClick={toggleLang}
+          onKeyDown={onActivate(toggleLang)}
+          title={t('tip.lang')}
+        >
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="9" fill="none" stroke="#fff" strokeWidth="1.4" />
             <path

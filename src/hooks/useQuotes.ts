@@ -11,6 +11,8 @@ export interface UseQuotesResult {
   quotes: Record<string, Quote>
   lastUpdated: number | null
   loading: boolean
+  /** True when the last poll returned no successful quotes (e.g. proxy down / rate-limited). */
+  error: boolean
   refresh: () => void
 }
 
@@ -22,10 +24,12 @@ export function useQuotes(symbols: string[]): UseQuotesResult {
   const [quotes, setQuotes] = useState<Record<string, Quote>>({})
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
 
   // Keep the latest symbol list available to the interval without re-arming it.
   const symbolsRef = useRef(symbols)
   symbolsRef.current = symbols
+  const symbolsKey = symbols.join(',')
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
@@ -43,6 +47,9 @@ export function useQuotes(symbols: string[]): UseQuotesResult {
         provider.getQuote(s.toUpperCase()),
       )
       if (cancelled) return
+
+      // All requests failing (with symbols to fetch) means the proxy/network is down.
+      setError(!results.some((r) => r.status === 'fulfilled'))
 
       setQuotes((prev) => {
         const next = { ...prev }
@@ -68,12 +75,13 @@ export function useQuotes(symbols: string[]): UseQuotesResult {
       clearInterval(id)
     }
     // Re-run when the set of symbols changes or a manual refresh is requested.
-  }, [symbols.join(','), tick])
+  }, [symbolsKey, tick])
 
   return {
     quotes,
     lastUpdated,
     loading,
+    error,
     refresh: () => setTick((t) => t + 1),
   }
 }

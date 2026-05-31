@@ -300,6 +300,14 @@ html, body {
 }
 .help-textarea:focus { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
 
+/* status bar boss-key shortcut indicator */
+.sb-bosskey {
+  color: #aaa; font-size: 11.5px; padding: 0 6px;
+  border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+  font-family: ui-monospace, monospace; letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 /* hint toast */
 .hint {
   position: fixed; bottom: 38px; left: 50%; transform: translateX(-50%);
@@ -444,6 +452,9 @@ html, body {
 }
 .fbar-refresh:hover { background: var(--chrome); color: var(--green); }
 .fbar-refresh svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* Visible keyboard focus for icon controls rendered as role="button" divs. */
+[role="button"]:focus-visible { outline: 2px solid #2684ff; outline-offset: 1px; border-radius: 3px; }
 .fbar-refresh.spin svg { animation: spin .6s linear; }
 @keyframes spin { to { transform: rotate(360deg); } }
 

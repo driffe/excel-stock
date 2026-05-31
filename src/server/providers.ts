@@ -16,17 +16,12 @@ import { CompositeNewsProvider, type TaggedNewsProvider } from '../api/composite
 
 type Env = Record<string, string | undefined>
 
-function pick(env: Env, ...names: string[]): string {
-  for (const n of names) {
-    const v = env[n]
-    if (v) return v
-  }
-  return ''
-}
+// Secrets are read ONLY from non-VITE_ server vars, so a key can never be inlined
+// into the client bundle even if a client file references import.meta.env.
 
 /** Live Finnhub quotes when a key is present, else the zero-config mock walk. */
 export function buildServerQuoteProvider(env: Env): QuoteProvider {
-  const key = pick(env, 'FINNHUB_API_KEY', 'VITE_FINNHUB_API_KEY')
+  const key = env.FINNHUB_API_KEY ?? ''
   return key ? new FinnhubProvider(key) : new MockProvider()
 }
 
@@ -38,14 +33,14 @@ export function buildServerQuoteProvider(env: Env): QuoteProvider {
 export function buildServerNewsProvider(env: Env): NewsProvider {
   const tagged: TaggedNewsProvider[] = []
 
-  const finnhub = pick(env, 'FINNHUB_API_KEY', 'VITE_FINNHUB_API_KEY')
+  const finnhub = env.FINNHUB_API_KEY ?? ''
   if (finnhub) tagged.push({ provider: new FinnhubNewsProvider(finnhub), affinity: 'en' })
 
-  const marketaux = pick(env, 'MARKETAUX_API_TOKEN', 'VITE_MARKETAUX_API_TOKEN')
+  const marketaux = env.MARKETAUX_API_TOKEN ?? ''
   if (marketaux) tagged.push({ provider: new MarketauxNewsProvider(marketaux), affinity: 'en' })
 
-  const nid = pick(env, 'NAVER_CLIENT_ID')
-  const nsec = pick(env, 'NAVER_CLIENT_SECRET')
+  const nid = env.NAVER_CLIENT_ID ?? ''
+  const nsec = env.NAVER_CLIENT_SECRET ?? ''
   if (nid && nsec) {
     tagged.push({
       provider: new NaverNewsProvider({ clientId: nid, clientSecret: nsec }),

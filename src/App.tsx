@@ -22,7 +22,9 @@ import type { Quote } from './types'
 
 const LS = 'excelstock_v4'
 const TOTAL_COLS = 26
-const TOTAL_ROWS = 100
+// Rows rendered for a watchlist sheet — enough to read as a spreadsheet while
+// rendering ~half the cells of a fixed 100 (the grid re-renders on every quote tick).
+const SHEET_ROWS = 50
 const BAR_UP = 'rgba(26,126,60,.22)'
 const BAR_DOWN = 'rgba(192,57,43,.20)'
 
@@ -87,11 +89,10 @@ export default function App() {
   const [dataBars, setDataBars] = useState(true)
   const [openFilter, setOpenFilter] = useState<{ col: number; x: number; y: number } | null>(null)
   const [searchVal, setSearchVal] = useState('')
-  const [spinning, setSpinning] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [decoy, setDecoy] = useState(false)
   const [flash, setFlash] = useState<Set<string>>(new Set())
-  const [hint, setHint] = useState(true)
+  const [hint, setHint] = useState(() => !localStorage.getItem('excelstock_hint_seen'))
   const [renameId, setRenameId] = useState<string | null>(null)
   const [showNews, setShowNews] = useState(true)
   const [showCoffee, setShowCoffee] = useState(false)
@@ -103,6 +104,8 @@ export default function App() {
   const quotesRef = useRef<Record<string, Quote>>({})
 
   // ---- gather the symbol list for the current view ----
+  // Returns a STABLE order (sheet order). The fav-sheet sort is applied later, in
+  // `view` (display only) — sorting here would churn the polling key on every tick.
   function gatherFavs(): string[] {
     const seen = new Set<string>()
     const arr: string[] = []
@@ -114,8 +117,6 @@ export default function App() {
         }
       }
     }
-    const sc = sortState[FAV_SHEET_ID]
-    if (sc) arr.sort((a, b) => compareSymbols(a, b, sc.col, sc.dir, quotesRef.current))
     return arr
   }
 
@@ -130,8 +131,14 @@ export default function App() {
     [decoy, listKey],
   )
 
-  const { quotes, lastUpdated, refresh: refreshQuotes } = useQuotes(viewSymbols)
-  const { news, indices, refresh: refreshNews } = useNews(viewSymbols, lang)
+  const {
+    quotes,
+    lastUpdated,
+    loading: quotesLoading,
+    error: quotesError,
+    refresh: refreshQuotes,
+  } = useQuotes(viewSymbols)
+  const { news, indices, loading: newsLoading, refresh: refreshNews } = useNews(viewSymbols, lang)
 
   // Keep the latest quotes reachable inside sort callbacks without re-arming.
   quotesRef.current = quotes
@@ -147,9 +154,13 @@ export default function App() {
     document.title = `${fname} - ${t('app.suffix')}`
   }, [decoy, lang, t])
   useEffect(() => {
-    const id = setTimeout(() => setHint(false), 5200)
+    if (!hint) return
+    const id = setTimeout(() => {
+      setHint(false)
+      localStorage.setItem('excelstock_hint_seen', '1')
+    }, 5200)
     return () => clearTimeout(id)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // leave 관심 sheet when no favorites remain
   useEffect(() => {
@@ -162,17 +173,25 @@ export default function App() {
   const lastPrices = useRef<Record<string, number | null>>({})
   useEffect(() => {
     if (decoy) return
-    const touched = new Set<string>()
-    viewSymbols.forEach((sym, i) => {
+    // Detect which symbols' prices actually changed, then map them to the rows the
+    // grid currently shows (`view`) — not raw `viewSymbols`, which is unfiltered/unsorted.
+    const changed = new Set<string>()
+    viewSymbols.forEach((sym) => {
       const price = quotes[sym]?.price ?? null
       const prev = lastPrices.current[sym]
-      if (prev !== undefined && prev !== price && price != null) {
-        touched.add(i + 1 + ',1')
-        touched.add(i + 1 + ',2')
-      }
+      if (prev !== undefined && prev !== price && price != null) changed.add(sym)
       lastPrices.current[sym] = price
     })
-    if (touched.size) setFlash(touched)
+    if (changed.size) {
+      const touched = new Set<string>()
+      view.forEach((v, i) => {
+        if (changed.has(v.sym)) {
+          touched.add(i + 1 + ',1')
+          touched.add(i + 1 + ',2')
+        }
+      })
+      if (touched.size) setFlash(touched)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotes])
   useEffect(() => {
@@ -195,8 +214,15 @@ export default function App() {
         .map((x, i) => ({ ...x, _i: i }))
         .sort((a, b) => (favs.has(b.sym) ? 1 : 0) - (favs.has(a.sym) ? 1 : 0) || a._i - b._i)
     }
+    // Display-only sort for the favorites sheet (keeps the polling key stable).
+    if (isFav) {
+      const sc = sortState[FAV_SHEET_ID]
+      if (sc) view = [...view].sort((a, b) => compareSymbols(a.sym, b.sym, sc.col, sc.dir, quotes))
+    }
   }
   const maxAbs = Math.max(2, ...view.map((x) => Math.abs(quotes[x.sym]?.changePct ?? 0)))
+  // The decoy renders exactly its rows; a watchlist renders a fixed SHEET_ROWS.
+  const totalRows = decoy ? getDecoy(lang).rows.length : SHEET_ROWS
 
   function makeBar(c: number) {
     const half = Math.min(46, (Math.abs(c) / maxAbs) * 46)
@@ -332,7 +358,7 @@ export default function App() {
       })
     }
     setEditing(null)
-    if (move === 'down') setSel((s) => ({ r: Math.min(TOTAL_ROWS - 1, s.r + 1), c: s.c }))
+    if (move === 'down') setSel((s) => ({ r: Math.min(totalRows - 1, s.r + 1), c: s.c }))
     else if (move === 'right') setSel((s) => ({ r: s.r, c: Math.min(TOTAL_COLS - 1, s.c + 1) }))
   }
 
@@ -389,8 +415,6 @@ export default function App() {
   // ---- refresh ----
   function doRefresh() {
     if (decoy) return
-    setSpinning(true)
-    setTimeout(() => setSpinning(false), 650)
     refreshQuotes()
     refreshNews()
   }
@@ -432,6 +456,10 @@ export default function App() {
   function deleteSheet(id: string) {
     const idx = sheets.findIndex((s) => s.id === id)
     if (idx < 0 || sheets.length <= 1) return
+    const target = sheets[idx]
+    if (target.symbols.length > 0 && !window.confirm(t('sheet.deleteConfirm', { name: sheetLabel(target) }))) {
+      return
+    }
     const next = sheets.filter((s) => s.id !== id)
     setSheets(next)
     if (activeSheet === id) {
@@ -447,57 +475,60 @@ export default function App() {
   }
 
   // ---- keyboard ----
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === '`' || e.code === 'Backquote') {
-        if (editing) return
-        e.preventDefault()
-        setDecoy((d) => !d)
-        setOpenFilter(null)
-        return
-      }
+  // Reassign the handler each render (fresh closures over sel/view/…) but arm the
+  // window listener only once, so it isn't removed/re-added on every quote tick.
+  const onKeyRef = useRef<(e: KeyboardEvent) => void>(() => {})
+  onKeyRef.current = (e: KeyboardEvent) => {
+    if (e.key === '`' || e.code === 'Backquote') {
       if (editing) return
-      const target = e.target as HTMLElement | null
-      const tag = target?.tagName?.toLowerCase()
-      if (tag === 'input' && !target?.closest('.celledit')) return
-      if (decoy) return
-      if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSel((s) => ({ r: Math.max(0, s.r - 1), c: s.c }))
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSel((s) => ({ r: Math.min(TOTAL_ROWS - 1, s.r + 1), c: s.c }))
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault()
-        setSel((s) => ({ r: s.r, c: Math.max(0, s.c - 1) }))
-      } else if (e.key === 'ArrowRight' || e.key === 'Tab') {
-        e.preventDefault()
-        setSel((s) => ({ r: s.r, c: Math.min(TOTAL_COLS - 1, s.c + 1) }))
-      } else if (e.key === 'Enter' || e.key === 'F2') {
-        e.preventDefault()
-        startEdit(sel.r, sel.c)
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault()
-        const i = sel.r - 1
-        if (sel.c === 0 && sel.r >= 1 && i < view.length && !isFav) {
-          const idx = view[i].idx
-          mutateActiveSymbols((symbols) => symbols.filter((_, k) => k !== idx))
-        }
-      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (sel.c === 0) startEdit(sel.r, sel.c, e.key)
-      }
+      e.preventDefault()
+      setDecoy((d) => !d)
+      setOpenFilter(null)
+      return
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sel, editing, decoy, activeSheet, view, sheets, isFav])
+    if (editing) return
+    const target = e.target as HTMLElement | null
+    const tag = target?.tagName?.toLowerCase()
+    if (tag === 'input' && !target?.closest('.celledit')) return
+    if (decoy) return
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSel((s) => ({ r: Math.max(0, s.r - 1), c: s.c }))
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSel((s) => ({ r: Math.min(totalRows - 1, s.r + 1), c: s.c }))
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      setSel((s) => ({ r: s.r, c: Math.max(0, s.c - 1) }))
+    } else if (e.key === 'ArrowRight' || e.key === 'Tab') {
+      e.preventDefault()
+      setSel((s) => ({ r: s.r, c: Math.min(TOTAL_COLS - 1, s.c + 1) }))
+    } else if (e.key === 'Enter' || e.key === 'F2') {
+      e.preventDefault()
+      startEdit(sel.r, sel.c)
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      e.preventDefault()
+      const i = sel.r - 1
+      if (sel.c === 0 && sel.r >= 1 && i < view.length && !isFav) {
+        const idx = view[i].idx
+        mutateActiveSymbols((symbols) => symbols.filter((_, k) => k !== idx))
+      }
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (sel.c === 0) startEdit(sel.r, sel.c, e.key)
+    }
+  }
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => onKeyRef.current(e)
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   // ---- derived display values ----
   const selRef = colName(sel.c) + (sel.r + 1)
   const sortCur = sortState[activeSheet]
   const selData = cellAt(sel.r, sel.c)
   const selNum =
-    selData && selData.num ? parseFloat(String(selData.text).replace(/[^0-9.\-]/g, '')) : null
+    selData && selData.num ? parseFloat(String(selData.text).replace(/[^0-9.-]/g, '')) : null
 
   const ups = list.filter((s) => (quotes[s]?.changePct ?? 0) >= 0).length
   const downs = list.length - ups
@@ -545,13 +576,14 @@ export default function App() {
         formula={formulaText()}
         refreshTime={!decoy ? timeStr(lastUpdated) : null}
         onRefresh={!decoy ? doRefresh : null}
-        spinning={spinning}
+        spinning={!decoy && quotesLoading}
+        error={!decoy && quotesError}
       />
       <div className="midrow" ref={midrowRef}>
         <div style={{ flex: showNews && !decoy ? `0 0 ${splitPct}%` : 1, display: 'flex', minWidth: 0 }}>
           <Grid
             totalCols={TOTAL_COLS}
-            totalRows={TOTAL_ROWS}
+            totalRows={totalRows}
             colW={colW}
             sel={sel}
             setSel={(s) => {
@@ -584,6 +616,7 @@ export default function App() {
                 indices={indices}
                 news={news}
                 quotes={quotes}
+                loading={newsLoading}
                 onClose={() => setShowNews(false)}
                 onRefresh={doRefresh}
               />

@@ -13,6 +13,8 @@ export interface UseNewsResult {
   news: NewsItem[]
   indices: IndexQuote[]
   loading: boolean
+  /** True when both news requests failed (e.g. proxy down / rate-limited). */
+  error: boolean
   refresh: () => void
 }
 
@@ -24,10 +26,12 @@ export function useNews(symbols: string[], lang: Lang): UseNewsResult {
   const [news, setNews] = useState<NewsItem[]>([])
   const [indices, setIndices] = useState<IndexQuote[]>(() => INDEX_SEEDS.map((i) => ({ ...i })))
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
   const [tick, setTick] = useState(0)
 
   const symbolsRef = useRef(symbols)
   symbolsRef.current = symbols
+  const symbolsKey = symbols.join(',')
 
   useEffect(() => {
     const provider = getNewsProvider()
@@ -36,20 +40,23 @@ export function useNews(symbols: string[], lang: Lang): UseNewsResult {
     async function load() {
       setLoading(true)
       const current = symbolsRef.current.filter((s) => s.trim() !== '')
-      const [market, company] = await Promise.all([
-        provider.getMarketNews(lang).catch(() => [] as NewsItem[]),
-        current.length
-          ? provider.getCompanyNews(current, lang).catch(() => [] as NewsItem[])
-          : Promise.resolve([] as NewsItem[]),
+      const [marketR, companyR] = await Promise.allSettled([
+        provider.getMarketNews(lang),
+        current.length ? provider.getCompanyNews(current, lang) : Promise.resolve([] as NewsItem[]),
       ])
       if (cancelled) return
+      const market = marketR.status === 'fulfilled' ? marketR.value : []
+      const company = companyR.status === 'fulfilled' ? companyR.value : []
+      setError(marketR.status === 'rejected' && companyR.status === 'rejected')
 
-      // Company news for the active sheet first, then general market news; dedupe.
+      // Company news for the active sheet first, then general market news; dedupe
+      // by url (then id) so the same article from two providers can't appear twice.
       const seen = new Set<string>()
       const merged: NewsItem[] = []
       for (const item of [...company, ...market]) {
-        if (seen.has(item.id)) continue
-        seen.add(item.id)
+        const dedupeKey = (item.url || item.id).toLowerCase()
+        if (seen.has(dedupeKey)) continue
+        seen.add(dedupeKey)
         merged.push(item)
       }
       setNews(merged.slice(0, 24))
@@ -62,7 +69,7 @@ export function useNews(symbols: string[], lang: Lang): UseNewsResult {
       cancelled = true
       clearInterval(id)
     }
-  }, [symbols.join(','), lang, tick])
+  }, [symbolsKey, lang, tick])
 
   // Subtle local drift on the indices strip (purely cosmetic — see data/indices.ts).
   useEffect(() => {
@@ -85,6 +92,7 @@ export function useNews(symbols: string[], lang: Lang): UseNewsResult {
     news,
     indices,
     loading,
+    error,
     refresh: () => setTick((t) => t + 1),
   }
 }

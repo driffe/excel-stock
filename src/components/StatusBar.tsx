@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { fmtChange } from '../lib/format'
+import { onActivate } from '../lib/a11y'
 
 interface StatusBarProps {
   decoy: boolean
@@ -36,6 +37,7 @@ export default function StatusBar({
   return (
     <div className="statusbar">
       <span>{t('status.ready')}</span>
+      {!decoy && <span className="sb-bosskey">{t('hint.bossmodeShort')}</span>}
       {!decoy && (
         <div className="sb-sum">
           <span>{t('status.count', { n: count })}</span>
@@ -50,7 +52,12 @@ export default function StatusBar({
       {!decoy && (
         <div
           className={'sb-news' + (showNews ? ' active' : '')}
+          role="button"
+          tabIndex={0}
+          aria-pressed={showNews}
+          aria-label={t('status.news')}
           onClick={onToggleNews}
+          onKeyDown={onActivate(onToggleNews)}
           title={t('status.news')}
         >
           <svg viewBox="0 0 24 24">

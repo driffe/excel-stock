@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useI18n } from '../i18n'
+import { useEscapeKey } from '../hooks/useEscapeKey'
 
 const HELP_EMAIL = 'ohhobby123@gmail.com'
 
@@ -7,6 +8,7 @@ export default function HelpDialog({ onClose }: { onClose: () => void }) {
   const { t } = useI18n()
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  useEscapeKey(onClose)
 
   function handleSend() {
     const url =
@@ -22,10 +24,18 @@ export default function HelpDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="modal-scrim" onMouseDown={onClose}>
-      <div className="modal help-modal" onMouseDown={(e) => e.stopPropagation()}>
+      <div
+        className="modal help-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('help.title')}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="modal-tt">
           <span>? {t('help.title')}</span>
-          <span className="x" onClick={onClose}>✕</span>
+          <span className="x" role="button" aria-label={t('help.cancel')} onClick={onClose}>
+            ✕
+          </span>
         </div>
         <div className="modal-body">
           <div className="fld">

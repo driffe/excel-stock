@@ -14,6 +14,8 @@ The app talks to external APIs only through same-origin `/api/*` proxy endpoints
 | `MARKETAUX_API_TOKEN` | EN news | **Secret** — server-side only. |
 | `NAVER_CLIENT_ID` | KO news | **Secret** — server-side only. |
 | `NAVER_CLIENT_SECRET` | KO news | **Secret** — server-side only. |
+| `ALLOWED_ORIGIN` | **recommended** | Lock `/api/*` to your deploy URL (e.g. `https://your-app.vercel.app`). Without it the proxy is open to the world. |
+| `RATE_LIMIT_PER_MIN` | optional | Per-IP cap on `/api/*` (default 240). |
 
 Only set the keys for the sources you use; the proxy enables each source whose
 key(s) are present and falls back to mock/empty otherwise.
@@ -53,3 +55,8 @@ line to adjust (and mirror it in `vite.config.ts`'s `mod.GET`).
   `npm run build && grep -r "<your key>" dist/` (expect 0 matches).
 - Naver runs server-side in direct mode (its Open API is CORS-blocked and the
   secret must never reach the browser).
+- The `/api/*` proxy is **open by default** — anyone could call it and drain your
+  Finnhub/Marketaux quota. Set `ALLOWED_ORIGIN` to your deploy URL; a per-IP rate
+  limit (`RATE_LIMIT_PER_MIN`, default 240) is always on as a backstop. Both are
+  best-effort (in-memory, header-based); for hard guarantees front the app with a
+  managed rate limiter (Vercel KV / Upstash).

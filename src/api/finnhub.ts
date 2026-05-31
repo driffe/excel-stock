@@ -18,9 +18,7 @@ export class FinnhubProvider implements QuoteProvider {
 
   constructor(private readonly apiKey: string) {
     if (!apiKey) {
-      throw new Error(
-        'FinnhubProvider requires an API key. Set VITE_FINNHUB_API_KEY in .env.',
-      )
+      throw new Error('FinnhubProvider requires an API key (server-side FINNHUB_API_KEY).')
     }
   }
 

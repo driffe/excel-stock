@@ -45,9 +45,7 @@ export class FinnhubNewsProvider implements NewsProvider {
 
   constructor(private readonly apiKey: string) {
     if (!apiKey) {
-      throw new Error(
-        'FinnhubNewsProvider requires an API key. Set VITE_FINNHUB_API_KEY in .env.',
-      )
+      throw new Error('FinnhubNewsProvider requires an API key (server-side FINNHUB_API_KEY).')
     }
   }
 

@@ -20,13 +20,25 @@ function apiDevServer(): Plugin {
     name: 'api-dev-server',
     configureServer(server) {
       const mw: Connect.NextHandleFunction = async (req, res, next) => {
-        const r = req as { url?: string; originalUrl?: string }
+        const r = req as {
+          url?: string
+          originalUrl?: string
+          headers?: Record<string, string | string[] | undefined>
+        }
         const raw = r.originalUrl ?? r.url ?? ''
         const path = raw.split('?')[0]
         const modPath = API_ROUTES[path]
         if (!modPath) return next()
+        // Forward just the headers the server-side guard needs (origin / rate-limit),
+        // avoiding forbidden request headers (host, connection, …).
+        const FWD = ['origin', 'sec-fetch-site', 'x-forwarded-for', 'x-real-ip']
+        const headers: Record<string, string> = {}
+        for (const k of FWD) {
+          const v = r.headers?.[k]
+          if (v != null) headers[k] = Array.isArray(v) ? v.join(',') : String(v)
+        }
         const g = globalThis as unknown as {
-          Request: new (url: string) => unknown
+          Request: new (url: string, init?: { headers?: Record<string, string> }) => unknown
         }
         try {
           const mod = (await server.ssrLoadModule(modPath)) as {
@@ -36,7 +48,7 @@ function apiDevServer(): Plugin {
               text(): Promise<string>
             }>
           }
-          const response = await mod.GET(new g.Request(`http://localhost${raw}`))
+          const response = await mod.GET(new g.Request(`http://localhost${raw}`, { headers }))
           res.statusCode = response.status
           res.setHeader('content-type', response.headers.get('content-type') ?? 'application/json')
           res.end(await response.text())

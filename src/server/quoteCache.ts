@@ -10,6 +10,7 @@ import type { Quote } from '../types'
 type Env = Record<string, string | undefined>
 
 const TTL_MS = 12_000
+const MAX_ENTRIES = 1000
 const cache = new Map<string, { at: number; quote: Quote }>()
 const inflight = new Map<string, Promise<Quote>>()
 
@@ -31,6 +32,7 @@ export async function getQuoteCached(env: Env, symbol: string): Promise<Quote> {
   const promise = getProvider(env)
     .getQuote(key)
     .then((quote) => {
+      if (cache.size > MAX_ENTRIES) cache.clear()
       cache.set(key, { at: Date.now(), quote })
       inflight.delete(key)
       return quote

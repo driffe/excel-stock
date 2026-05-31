@@ -92,6 +92,7 @@ export const ko: Record<TranslationKey, string> = {
 
   // Boss-key hint
   'hint.bosskey': '{key} 키를 누르면 위장 모드 (보스키)',
+  'hint.bossmodeShort': '` 보스키',
 
   // News pane
   'news.title': '뉴스',
@@ -146,4 +147,49 @@ export const ko: Record<TranslationKey, string> = {
   // TitleBar extra buttons
   'titlebar.coffee': '커피 한 잔 사주기',
   'titlebar.help': '도움말 및 피드백',
+
+  // Ribbon support group
+  'ribbon.btn.coffee': '커피\n사주기',
+  'ribbon.btn.help': '도움말\n피드백',
+  'ribbon.group.support': '지원',
+
+  // Tooltips (decorative Excel chrome)
+  'tip.autosave': '자동 저장',
+  'tip.save': '저장',
+  'tip.undo': '실행 취소',
+  'tip.redo': '다시 실행',
+  'tip.lang': 'Language / 언어',
+  'tip.cut': '잘라내기',
+  'tip.copy': '복사',
+  'tip.formatPainter': '서식 복사',
+  'tip.fontGrow': '글꼴 크게',
+  'tip.fontShrink': '글꼴 작게',
+  'tip.bold': '굵게',
+  'tip.italic': '기울임꼴',
+  'tip.underline': '밑줄',
+  'tip.border': '테두리',
+  'tip.fillColor': '채우기 색',
+  'tip.fontColor': '글꼴 색',
+  'tip.orientation': '방향',
+  'tip.alignLeft': '왼쪽 맞춤',
+  'tip.alignCenter': '가운데 맞춤',
+  'tip.alignRight': '오른쪽 맞춤',
+  'tip.wrapText': '텍스트 줄 바꿈',
+  'tip.mergeCenter': '병합하고 가운데 맞춤',
+  'tip.currency': '통화',
+  'tip.percent': '백분율 스타일',
+  'tip.comma': '쉼표 스타일',
+  'tip.incDecimal': '자릿수 늘림',
+  'tip.decDecimal': '자릿수 줄임',
+  'tip.autosum': '자동 합계',
+  'tip.fill': '채우기',
+  'tip.clear': '지우기',
+
+  // Sheet delete confirmation
+  'sheet.deleteConfirm': '"{name}" 시트와 종목을 삭제할까요?',
+
+  // Loading / error / empty states
+  'news.empty': '뉴스 없음',
+  'news.loading': '뉴스 불러오는 중…',
+  'fbar.error': '연결 오류',
 }

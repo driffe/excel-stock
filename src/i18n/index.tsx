@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- context module also exports a hook + helper */
 import {
   createContext,
   useCallback,

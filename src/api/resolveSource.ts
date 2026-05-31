@@ -14,6 +14,7 @@ const UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36'
 const CONCURRENCY = 5
 const TIMEOUT_MS = 6000
+const MAX_CACHE = 500
 
 // finnhub redirect url → resolved { real url, clean source }. Stable per article.
 const cache = new Map<string, { url: string; source: string }>()
@@ -58,6 +59,33 @@ function cleanSource(domain: string): string {
   return SOURCE_NAMES[base] ?? domain // the real domain is already more accurate than "Yahoo"
 }
 
+/** SSRF guard: only trust http(s) URLs on a public host (not finnhub, loopback, or private IPs). */
+function isPublicHttpUrl(raw: string): boolean {
+  let u: URL
+  try {
+    u = new URL(raw)
+  } catch {
+    return false
+  }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
+  const host = u.hostname.toLowerCase()
+  if (host === 'finnhub.io' || host.endsWith('.finnhub.io')) return false
+  if (host === 'localhost' || host.endsWith('.localhost')) return false
+  if (host === '::1' || host.startsWith('fe80') || host.startsWith('fc') || host.startsWith('fd')) {
+    return false
+  }
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/.exec(host)
+  if (m) {
+    const a = +m[1]
+    const b = +m[2]
+    // loopback / "this host" / private / link-local
+    if (a === 0 || a === 127 || a === 10 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)) {
+      return false
+    }
+  }
+  return true
+}
+
 async function resolveOne(item: NewsItem): Promise<void> {
   if (hostOf(item.url) !== 'finnhub.io') return // only fix finnhub redirect links
 
@@ -71,17 +99,21 @@ async function resolveOne(item: NewsItem): Promise<void> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
   try {
+    // redirect: 'manual' — read the Location instead of following it, so we never
+    // issue a request to the (Finnhub-feed-influenced) target host. Validate it's a
+    // public host before trusting it, to block SSRF to internal/metadata addresses.
     const res = await fetch(item.url, {
-      redirect: 'follow',
+      redirect: 'manual',
       headers: { 'user-agent': UA },
       signal: ctrl.signal,
     })
-    res.body?.cancel?.() // we only need res.url — don't download the article body
-    const finalHost = hostOf(res.url)
-    if (finalHost && finalHost !== 'finnhub.io') {
-      const source = cleanSource(finalHost)
-      cache.set(item.url, { url: res.url, source })
-      item.url = res.url
+    res.body?.cancel?.()
+    const loc = res.headers.get('location') ?? ''
+    if (isPublicHttpUrl(loc)) {
+      const source = cleanSource(hostOf(loc))
+      if (cache.size > MAX_CACHE) cache.clear()
+      cache.set(item.url, { url: loc, source })
+      item.url = loc
       item.source = source
     }
   } catch {

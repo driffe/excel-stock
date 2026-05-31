@@ -90,6 +90,7 @@ export const en = {
 
   // Boss-key hint
   'hint.bosskey': 'Press {key} for disguise mode (boss key)',
+  'hint.bossmodeShort': '` Boss key',
 
   // News pane
   'news.title': 'News',
@@ -144,6 +145,51 @@ export const en = {
   // TitleBar extra buttons
   'titlebar.coffee': 'Buy me a coffee',
   'titlebar.help': 'Help & Feedback',
+
+  // Ribbon support group
+  'ribbon.btn.coffee': 'Buy me\na coffee',
+  'ribbon.btn.help': 'Help &\nFeedback',
+  'ribbon.group.support': 'Support',
+
+  // Tooltips (decorative Excel chrome — localized so EN mode doesn't show Korean)
+  'tip.autosave': 'AutoSave',
+  'tip.save': 'Save',
+  'tip.undo': 'Undo',
+  'tip.redo': 'Redo',
+  'tip.lang': 'Language / 언어',
+  'tip.cut': 'Cut',
+  'tip.copy': 'Copy',
+  'tip.formatPainter': 'Format Painter',
+  'tip.fontGrow': 'Increase Font Size',
+  'tip.fontShrink': 'Decrease Font Size',
+  'tip.bold': 'Bold',
+  'tip.italic': 'Italic',
+  'tip.underline': 'Underline',
+  'tip.border': 'Borders',
+  'tip.fillColor': 'Fill Color',
+  'tip.fontColor': 'Font Color',
+  'tip.orientation': 'Orientation',
+  'tip.alignLeft': 'Align Left',
+  'tip.alignCenter': 'Center',
+  'tip.alignRight': 'Align Right',
+  'tip.wrapText': 'Wrap Text',
+  'tip.mergeCenter': 'Merge & Center',
+  'tip.currency': 'Accounting Number Format',
+  'tip.percent': 'Percent Style',
+  'tip.comma': 'Comma Style',
+  'tip.incDecimal': 'Increase Decimal',
+  'tip.decDecimal': 'Decrease Decimal',
+  'tip.autosum': 'AutoSum',
+  'tip.fill': 'Fill',
+  'tip.clear': 'Clear',
+
+  // Sheet delete confirmation
+  'sheet.deleteConfirm': 'Delete the "{name}" sheet and its tickers?',
+
+  // Loading / error / empty states
+  'news.empty': 'No news available',
+  'news.loading': 'Loading news…',
+  'fbar.error': 'Connection error',
 } as const
 
 export type TranslationKey = keyof typeof en

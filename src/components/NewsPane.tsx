@@ -2,12 +2,14 @@ import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useI18n, relTime } from '../i18n'
 import type { TranslationKey } from '../i18n/en'
 import { colName, fmtChange } from '../lib/format'
+import { onActivate } from '../lib/a11y'
 import type { IndexQuote, NewsItem, Quote } from '../types'
 
 interface NewsPaneProps {
   indices: IndexQuote[]
   news: NewsItem[]
   quotes: Record<string, Quote>
+  loading?: boolean
   onClose: () => void
   onRefresh: () => void
 }
@@ -43,7 +45,14 @@ function isSafeUrl(url: string): boolean {
  * so the right pane reads like a second sheet rather than a news app. Ported from
  * the design's news.jsx; wired to live news + the indices strip + live quotes.
  */
-export default function NewsPane({ indices, news, quotes, onClose, onRefresh }: NewsPaneProps) {
+export default function NewsPane({
+  indices,
+  news,
+  quotes,
+  loading,
+  onClose,
+  onRefresh,
+}: NewsPaneProps) {
   const { t } = useI18n()
   const [sel, setSel] = useState({ r: 9, c: 5 })
 
@@ -84,6 +93,9 @@ export default function NewsPane({ indices, news, quotes, onClose, onRefresh }: 
       t('news.col.time'),
     ],
   })
+  if (news.length === 0) {
+    rows.push({ type: 'section', text: loading ? t('news.loading') : t('news.empty') })
+  }
   news.forEach((n) => {
     const tk = n.related[0]
     const chg = tk ? quotes[tk]?.changePct ?? null : null
@@ -184,12 +196,28 @@ export default function NewsPane({ indices, news, quotes, onClose, onRefresh }: 
         </svg>
         <span className="np-title">{t('news.title')}</span>
         <span className="spacer" />
-        <div className="np-ibtn" title={t('news.refresh')} onClick={onRefresh}>
+        <div
+          className="np-ibtn"
+          role="button"
+          tabIndex={0}
+          aria-label={t('news.refresh')}
+          title={t('news.refresh')}
+          onClick={onRefresh}
+          onKeyDown={onActivate(onRefresh)}
+        >
           <svg viewBox="0 0 24 24">
             <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
           </svg>
         </div>
-        <div className="np-ibtn" title={t('news.close')} onClick={onClose}>
+        <div
+          className="np-ibtn"
+          role="button"
+          tabIndex={0}
+          aria-label={t('news.close')}
+          title={t('news.close')}
+          onClick={onClose}
+          onKeyDown={onActivate(onClose)}
+        >
           <svg viewBox="0 0 24 24">
             <path d="M6 6l12 12M18 6L6 18" stroke="#777" strokeWidth="2" fill="none" />
           </svg>

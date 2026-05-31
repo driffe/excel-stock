@@ -85,13 +85,13 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
             }
           />
           <div className="rmini">
-            <div className="ribtn" title="잘라내기">
+            <div className="ribtn" title={t('tip.cut')}>
               <I d="M9 3a3 3 0 00-2 5.2L9.6 11 4 18h2.5l4.5-5 4.5 5H18l-5.6-7 2.6-2.8A3 3 0 1013 6l-1 1-1-1a3 3 0 00-2-3z" />
             </div>
-            <div className="ribtn" title="복사">
+            <div className="ribtn" title={t('tip.copy')}>
               <I d="M8 2h9a1 1 0 011 1v12h-2V4H8V2zM5 6h9a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1z" />
             </div>
-            <div className="ribtn" title="서식 복사">
+            <div className="ribtn" title={t('tip.formatPainter')}>
               <I d="M3 4h13v5H3V4zm2 7h9v3a2 2 0 01-2 2h-1v6h-3v-6H7a2 2 0 01-2-2v-3z" />
             </div>
           </div>
@@ -112,37 +112,37 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
             <div className="rcombo" style={{ width: 48 }}>
               11 <span className="caret">▾</span>
             </div>
-            <div className="ribtn" title="글꼴 크게" style={{ fontSize: 13 }}>
+            <div className="ribtn" title={t('tip.fontGrow')} style={{ fontSize: 13 }}>
               A<sup style={{ fontSize: 8 }}>▲</sup>
             </div>
-            <div className="ribtn" title="글꼴 작게" style={{ fontSize: 10 }}>
+            <div className="ribtn" title={t('tip.fontShrink')} style={{ fontSize: 10 }}>
               A<sup style={{ fontSize: 7 }}>▼</sup>
             </div>
           </div>
           <div className="rmini-row">
-            <div className="ribtn bold-i" title="굵게">
+            <div className="ribtn bold-i" title={t('tip.bold')}>
               가
             </div>
-            <div className="ribtn ital-i" title="기울임꼴">
+            <div className="ribtn ital-i" title={t('tip.italic')}>
               가
             </div>
-            <div className="ribtn und-i" title="밑줄">
+            <div className="ribtn und-i" title={t('tip.underline')}>
               가
             </div>
-            <div className="ribtn" title="테두리">
+            <div className="ribtn" title={t('tip.border')}>
               <svg viewBox="0 0 24 24">
                 <rect x="4" y="4" width="16" height="16" fill="none" stroke="#5a5a5a" strokeWidth="1.5" />
                 <line x1="12" y1="4" x2="12" y2="20" stroke="#5a5a5a" />
                 <line x1="4" y1="12" x2="20" y2="12" stroke="#5a5a5a" />
               </svg>
             </div>
-            <div className="ribtn" title="채우기 색">
+            <div className="ribtn" title={t('tip.fillColor')}>
               <svg viewBox="0 0 24 24">
                 <path d="M5 13l6-6 5 5-6 6a2 2 0 01-3 0l-2-2a2 2 0 010-3z" fill="#5a5a5a" />
                 <rect x="4" y="20" width="16" height="3" fill="#FFC000" />
               </svg>
             </div>
-            <div className="ribtn" title="글꼴 색">
+            <div className="ribtn" title={t('tip.fontColor')}>
               <svg viewBox="0 0 24 24">
                 <path d="M7 16L11 5h2l4 11h-2l-1-3H10l-1 3H7zm3.6-5h2.8L12 7l-1.4 4z" fill="#5a5a5a" />
                 <rect x="6" y="19" width="12" height="3" fill="#C0392B" />
@@ -169,12 +169,12 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
                 </svg>
               </div>
             ))}
-            <div className="ribtn" title="방향">
+            <div className="ribtn" title={t('tip.orientation')}>
               ↗
             </div>
           </div>
           <div className="rmini-row">
-            <div className="ribtn" title="왼쪽 맞춤">
+            <div className="ribtn" title={t('tip.alignLeft')}>
               <svg viewBox="0 0 24 24" stroke="#5a5a5a" strokeWidth="1.5">
                 <line x1="4" y1="6" x2="18" y2="6" />
                 <line x1="4" y1="10" x2="13" y2="10" />
@@ -182,7 +182,7 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
                 <line x1="4" y1="18" x2="13" y2="18" />
               </svg>
             </div>
-            <div className="ribtn" title="가운데 맞춤">
+            <div className="ribtn" title={t('tip.alignCenter')}>
               <svg viewBox="0 0 24 24" stroke="#5a5a5a" strokeWidth="1.5">
                 <line x1="4" y1="6" x2="20" y2="6" />
                 <line x1="7" y1="10" x2="17" y2="10" />
@@ -190,7 +190,7 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
                 <line x1="7" y1="18" x2="17" y2="18" />
               </svg>
             </div>
-            <div className="ribtn" title="오른쪽 맞춤">
+            <div className="ribtn" title={t('tip.alignRight')}>
               <svg viewBox="0 0 24 24" stroke="#5a5a5a" strokeWidth="1.5">
                 <line x1="6" y1="6" x2="20" y2="6" />
                 <line x1="11" y1="10" x2="20" y2="10" />
@@ -198,10 +198,10 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
                 <line x1="11" y1="18" x2="20" y2="18" />
               </svg>
             </div>
-            <div className="ribtn" title="텍스트 줄 바꿈" style={{ fontSize: 9 }}>
+            <div className="ribtn" title={t('tip.wrapText')} style={{ fontSize: 9 }}>
               ⮐
             </div>
-            <div className="ribtn" title="병합하고 가운데 맞춤" style={{ fontSize: 9 }}>
+            <div className="ribtn" title={t('tip.mergeCenter')} style={{ fontSize: 9 }}>
               ↹
             </div>
           </div>
@@ -221,19 +221,19 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
             </div>
           </div>
           <div className="rmini-row">
-            <div className="ribtn" title="통화" style={{ fontWeight: 700 }}>
+            <div className="ribtn" title={t('tip.currency')} style={{ fontWeight: 700 }}>
               $
             </div>
-            <div className="ribtn" title="백분율 스타일" style={{ fontWeight: 600 }}>
+            <div className="ribtn" title={t('tip.percent')} style={{ fontWeight: 600 }}>
               %
             </div>
-            <div className="ribtn" title="쉼표 스타일" style={{ fontWeight: 700, fontSize: 14 }}>
+            <div className="ribtn" title={t('tip.comma')} style={{ fontWeight: 700, fontSize: 14 }}>
               ,
             </div>
-            <div className="ribtn" title="자릿수 늘림" style={{ fontSize: 10 }}>
+            <div className="ribtn" title={t('tip.incDecimal')} style={{ fontSize: 10 }}>
               .0→
             </div>
-            <div className="ribtn" title="자릿수 줄임" style={{ fontSize: 10 }}>
+            <div className="ribtn" title={t('tip.decDecimal')} style={{ fontSize: 10 }}>
               ←.0
             </div>
           </div>
@@ -331,13 +331,13 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
       <div className="rgroup">
         <div className="rgroup-body">
           <div className="rmini">
-            <div className="ribtn" title="자동 합계" style={{ fontWeight: 700, color: '#107C41' }}>
+            <div className="ribtn" title={t('tip.autosum')} style={{ fontWeight: 700, color: '#107C41' }}>
               Σ
             </div>
-            <div className="ribtn" title="채우기">
+            <div className="ribtn" title={t('tip.fill')}>
               ▾
             </div>
-            <div className="ribtn" title="지우기">
+            <div className="ribtn" title={t('tip.clear')}>
               ⌫
             </div>
           </div>
@@ -366,18 +366,18 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
       {/* Support — pushed to far right */}
       <div className="rgroup rgroup-support" style={{ marginLeft: 'auto', borderRight: 'none', borderLeft: '1px solid var(--line)' }}>
         <div className="rgroup-body" style={{ gap: 4 }}>
-          <div className="rbtn big rib-coffee" onClick={onCoffee} title="Buy me a coffee">
+          <div className="rbtn big rib-coffee" onClick={onCoffee} title={t('titlebar.coffee')}>
             <i className="fa-solid fa-mug-hot" style={{ fontSize: 28 }} />
-            <span className="lbl">Buy me<br />a coffee</span>
+            <span className="lbl">{multiline(t('ribbon.btn.coffee'))}</span>
           </div>
-          <div className="rbtn big" onClick={onHelp} title="Help & Feedback">
+          <div className="rbtn big" onClick={onHelp} title={t('titlebar.help')}>
             <svg viewBox="0 0 24 24">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
             </svg>
-            <span className="lbl">Help &<br />Feedback</span>
+            <span className="lbl">{multiline(t('ribbon.btn.help'))}</span>
           </div>
         </div>
-        <div className="rgroup-label">Support</div>
+        <div className="rgroup-label">{t('ribbon.group.support')}</div>
       </div>
     </div>
   )

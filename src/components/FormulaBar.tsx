@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { onActivate } from '../lib/a11y'
 
 interface FormulaBarProps {
   selRef: string
@@ -6,6 +7,7 @@ interface FormulaBarProps {
   refreshTime: string | null
   onRefresh: (() => void) | null
   spinning: boolean
+  error?: boolean
 }
 
 function todayStr(lang: 'en' | 'ko'): string {
@@ -24,6 +26,7 @@ export default function FormulaBar({
   refreshTime,
   onRefresh,
   spinning,
+  error,
 }: FormulaBarProps) {
   const { t, lang } = useI18n()
   return (
@@ -43,12 +46,17 @@ export default function FormulaBar({
         <div
           className={'fbar-refresh' + (spinning ? ' spin' : '')}
           onClick={onRefresh}
-          title={t('fbar.refresh')}
+          onKeyDown={onActivate(onRefresh)}
+          role="button"
+          tabIndex={0}
+          aria-label={error ? t('fbar.error') : t('fbar.refresh')}
+          title={error ? t('fbar.error') : t('fbar.refresh')}
+          style={error ? { color: 'var(--down)' } : undefined}
         >
           <svg viewBox="0 0 24 24">
             <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
           </svg>
-          {refreshTime}
+          {error ? t('fbar.error') : refreshTime}
         </div>
       )}
     </div>

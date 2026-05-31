@@ -17,11 +17,6 @@ export interface Quote {
   updatedAt: number | null
 }
 
-/** One row in the spreadsheet. Quote fields are merged in for display. */
-export interface StockRow extends Partial<Quote> {
-  symbol: string
-}
-
 /** A normalized news item, shared across providers (Finnhub / mock). */
 export interface NewsItem {
   id: string
@@ -42,18 +37,4 @@ export interface IndexQuote {
   key: string
   value: number
   changePct: number
-}
-
-export function emptyQuote(symbol: string): Quote {
-  return {
-    symbol,
-    price: null,
-    change: null,
-    changePct: null,
-    high: null,
-    low: null,
-    open: null,
-    prevClose: null,
-    updatedAt: null,
-  }
 }

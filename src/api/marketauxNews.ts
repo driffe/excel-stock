@@ -39,7 +39,7 @@ export class MarketauxNewsProvider implements NewsProvider {
   readonly name = 'marketaux'
 
   constructor(private readonly token: string) {
-    if (!token) throw new Error('MarketauxNewsProvider requires VITE_MARKETAUX_API_TOKEN.')
+    if (!token) throw new Error('MarketauxNewsProvider requires server-side MARKETAUX_API_TOKEN.')
   }
 
   private async fetchNews(params: Record<string, string>): Promise<NewsItem[]> {

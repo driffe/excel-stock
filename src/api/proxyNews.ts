@@ -16,7 +16,7 @@ export class ProxyNewsProvider implements NewsProvider {
     const qs = new URLSearchParams({ type, lang })
     if (symbols?.length) qs.set('symbols', symbols.join(','))
     const res = await fetch(`/api/news?${qs}`)
-    if (!res.ok) return []
+    if (!res.ok) throw new Error(`news proxy ${res.status}`)
     return (await res.json()) as NewsItem[]
   }
 
