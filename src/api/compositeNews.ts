@@ -1,5 +1,5 @@
-import type { NewsProvider } from './news'
-import type { Lang, NewsItem } from '../types'
+import type { NewsProvider } from './news.js'
+import type { Lang, NewsItem } from '../types.js'
 
 /** A news source's language affinity: which UI language it's preferred for. */
 export type LangAffinity = 'en' | 'ko' | 'any'

@@ -4,9 +4,9 @@
 // req/res) — what Vercel's Node runtime invokes; the Vite dev middleware passes
 // Connect's req/res. Compiled by Vercel/Vite, not `tsc -b`.
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getNewsCached } from '../src/server/newsCache'
-import { guard } from '../src/server/guard'
-import type { Lang } from '../src/types'
+import { getNewsCached } from '../src/server/newsCache.js'
+import { guard } from '../src/server/guard.js'
+import type { Lang } from '../src/types.js'
 
 function send(res: ServerResponse, status: number, contentType: string, body: string) {
   res.statusCode = status

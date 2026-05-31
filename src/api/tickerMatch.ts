@@ -1,4 +1,4 @@
-import { SYMBOL_NAMES } from './names'
+import { SYMBOL_NAMES } from './names.js'
 
 /**
  * Decides which watchlist symbols a news article is actually about, by checking

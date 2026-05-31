@@ -2,8 +2,8 @@
 // Returns real S&P 500 / Nasdaq / Dow values (server-side, keyless). Node handler
 // signature; compiled by Vercel/Vite, not `tsc -b`.
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getIndices } from '../src/server/indices'
-import { guard } from '../src/server/guard'
+import { getIndices } from '../src/server/indices.js'
+import { guard } from '../src/server/guard.js'
 
 function send(res: ServerResponse, status: number, contentType: string, body: string) {
   res.statusCode = status

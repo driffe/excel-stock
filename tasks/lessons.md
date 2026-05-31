@@ -25,6 +25,24 @@ Patterns captured after user corrections / verification gaps, per CLAUDE.md "Sel
   responses per host in headless Playwright (status-code histogram), not just a screenshot —
   mock vs live looks identical on screen but the network tab proves which sources answered.
 
+## Vercel functions + ESM: relative imports need `.js` extensions
+
+- Symptom: every `/api/*` returns 500 `x-vercel-error: FUNCTION_INVOCATION_FAILED`. Runtime log:
+  `ERR_MODULE_NOT_FOUND: Cannot find module '/var/task/src/server/quoteCache' imported from
+  /var/task/api/quote.js`. Cause: package.json is `"type": "module"`, and **Vercel transpiles
+  the functions (does NOT bundle)**, so Node ESM requires **explicit `.js` extensions** on
+  relative imports. Our extensionless imports (`'../src/server/quoteCache'`) fail at load.
+  (Local esbuild `--bundle` hid this — bundling makes extensions irrelevant.)
+- Fix: add `.js` to every relative import in the function's import graph (`api/*.ts`,
+  `src/server/*`, and the `src/api/*`/`src/lib/*`/`src/data/*` files they pull in). tsc
+  (`moduleResolution: bundler`) and Vite both still resolve `'./x.js'` → `x.ts`, so the client
+  build is unaffected. Do NOT add `.js` to directory imports (`../i18n`) or packages.
+- **Reproduce Vercel locally** (no deploy/auth): transpile-only (not bundle) + run under ESM —
+  `esbuild $(find src api -name '*.ts' ! -name '*.test.ts') --outdir=/tmp/v --outbase=. --format=esm`,
+  write `/tmp/v/package.json` = `{"type":"module"}`, then `import('/tmp/v/api/quote.js')`. It
+  errors `ERR_MODULE_NOT_FOUND` with missing extensions and LOADS once they're added. This is the
+  definitive check — the Vite dev middleware and esbuild-bundle tests both mask the issue.
+
 ## Browser API keys & proxy (Vite + Vercel)
 
 - **Any `VITE_`-prefixed var is baked into the client bundle** — fine for flags

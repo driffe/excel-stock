@@ -3,9 +3,9 @@
 // upstream Finnhub call, and serves a short TTL cache — which is what keeps live
 // mode under Finnhub's free-tier rate limit. Module state persists across requests
 // in a warm process (Vite dev server; warm Vercel function instance).
-import { buildServerQuoteProvider } from './providers'
-import type { QuoteProvider } from '../api/provider'
-import type { Quote } from '../types'
+import { buildServerQuoteProvider } from './providers.js'
+import type { QuoteProvider } from '../api/provider.js'
+import type { Quote } from '../types.js'
 
 type Env = Record<string, string | undefined>
 

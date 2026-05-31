@@ -1,7 +1,7 @@
-import type { NewsProvider } from './news'
-import type { NewsItem } from '../types'
-import { resolveNewsSources } from './resolveSource'
-import { relatedSymbols } from './tickerMatch'
+import type { NewsProvider } from './news.js'
+import type { NewsItem } from '../types.js'
+import { resolveNewsSources } from './resolveSource.js'
+import { relatedSymbols } from './tickerMatch.js'
 // note: company-news `related` is re-derived from actual headline/summary mentions
 
 interface FinnhubNews {

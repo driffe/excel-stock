@@ -1,5 +1,5 @@
-import type { QuoteProvider } from './provider'
-import type { Quote } from '../types'
+import type { QuoteProvider } from './provider.js'
+import type { Quote } from '../types.js'
 
 interface FinnhubQuote {
   c: number // current price

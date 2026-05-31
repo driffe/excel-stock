@@ -1,9 +1,9 @@
-import type { QuoteProvider } from './provider'
-import type { NewsProvider } from './news'
-import { MockProvider } from './mock'
-import { MockNewsProvider } from './news'
-import { ProxyQuoteProvider } from './proxyQuote'
-import { ProxyNewsProvider } from './proxyNews'
+import type { QuoteProvider } from './provider.js'
+import type { NewsProvider } from './news.js'
+import { MockProvider } from './mock.js'
+import { MockNewsProvider } from './news.js'
+import { ProxyQuoteProvider } from './proxyQuote.js'
+import { ProxyNewsProvider } from './proxyNews.js'
 
 let cachedQuote: QuoteProvider | null = null
 let cachedNews: NewsProvider | null = null

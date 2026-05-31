@@ -1,4 +1,4 @@
-import type { Lang } from '../types'
+import type { Lang } from '../types.js'
 
 /**
  * Symbol → bilingual display name. The 종목명 (Ticker name) column is editable,

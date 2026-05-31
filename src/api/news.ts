@@ -1,4 +1,4 @@
-import type { Lang, NewsItem } from '../types'
+import type { Lang, NewsItem } from '../types.js'
 
 /**
  * A news provider fetches market + company news, normalized to NewsItem[].
