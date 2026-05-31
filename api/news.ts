@@ -1,20 +1,29 @@
 // Vercel serverless function: GET /api/news?type=market|company&lang=en|ko&symbols=A,B
 // Composes news from every configured source server-side (keys never reach the
-// client) and returns a merged NewsItem[]. Node handler signature (default export,
-// req/res) — what Vercel's Node runtime invokes; the Vite dev middleware passes
-// Connect's req/res. Compiled by Vercel/Vite, not `tsc -b`.
-import type { IncomingMessage, ServerResponse } from 'node:http'
+// client) and returns a merged NewsItem[]. Node handler (default export, req/res);
+// compiled by Vercel/Vite, not `tsc -b`. Types inline (no node @types on api path).
 import { getNewsCached } from '../src/server/newsCache.js'
 import { guard } from '../src/server/guard.js'
 import type { Lang } from '../src/types.js'
 
-function send(res: ServerResponse, status: number, contentType: string, body: string) {
+declare const process: { env: Record<string, string | undefined> }
+interface Req {
+  url?: string
+  headers: Record<string, string | string[] | undefined>
+}
+interface Res {
+  statusCode: number
+  setHeader(key: string, value: string): void
+  end(body: string): void
+}
+
+function send(res: Res, status: number, contentType: string, body: string) {
   res.statusCode = status
   res.setHeader('content-type', contentType)
   res.end(body)
 }
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
+export default async function handler(req: Req, res: Res) {
   const blocked = guard(process.env, req)
   if (blocked) return send(res, blocked.status, 'text/plain', blocked.message)
 

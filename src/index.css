@@ -475,3 +475,63 @@ html, body {
 .sb-news:hover { background: #E5E0DC; }
 .sb-news.active { color: var(--green); }
 .sb-news svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* ===== Mobile responsive (≤640px) ===== */
+@media (max-width: 640px) {
+  /* -- Title bar: strip decorative chrome, keep search + lang -- */
+  .tb-qbtn, .tb-sep, .tb-acct, .tb-win { display: none !important; }
+  .tb-search { flex: 1 1 auto; max-width: none; margin: 0; }
+
+  /* -- Ribbon tabs: purely decorative on mobile -- */
+  .ribtabs { display: none; }
+
+  /* -- Ribbon: compact icon-only toolbar (show functional groups only) -- */
+  .ribbon {
+    height: 44px; flex: 0 0 44px; padding: 2px 2px 0;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  /* Hide decorative groups: Clipboard, Font, Alignment, Number */
+  .ribbon .rgroup:nth-child(-n+4) { display: none; }
+  .rgroup { padding: 2px 3px 2px; }
+  .rgroup-label { display: none; }
+  .rbtn .lbl, .rbtn .caret { display: none; }
+  .rbtn { min-width: 28px; height: auto; padding: 4px 5px; }
+  .rbtn.big { padding: 4px 7px; justify-content: center; }
+  .rbtn.big svg { width: 22px; height: 22px; }
+  .rbtn svg { width: 18px; height: 18px; }
+  .rmini { display: none; }
+  .rcombo { display: none; }
+  .rgroup-support { margin-left: 0 !important; }
+
+  /* -- Formula bar: strip decorative fx area and date -- */
+  .fbar-fx { display: none; }
+  .fbar-date { display: none; }
+
+  /* -- Midrow: stack grid above news pane -- */
+  .midrow { flex-direction: column; }
+  .grid-col { min-height: 120px; }
+  .news-col { min-height: 80px; }
+
+  /* -- Split handle: horizontal bar for vertical resize on mobile -- */
+  .split-handle {
+    flex: 0 0 8px; cursor: row-resize;
+    background: var(--line); width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .split-handle:hover, .split-handle:active { background: var(--green-hdr); }
+  .split-handle::after {
+    content: ''; width: 28px; height: 2px; background: #b0b0b0;
+    border-radius: 1px; box-shadow: 0 4px 0 #b0b0b0, 0 -4px 0 #b0b0b0;
+  }
+
+  /* -- Sheet tabs: horizontal scroll -- */
+  .sheetbar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* -- Status bar: compact -- */
+  .sb-bosskey { display: none; }
+  .sb-views { display: none; }
+  .sb-zoom { display: none; }
+  .statusbar { gap: 8px; height: auto; min-height: 22px; flex-wrap: wrap; padding: 3px 8px; }
+  .sb-stat { margin-left: 0; flex-wrap: wrap; gap: 6px; }
+}
