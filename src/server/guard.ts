@@ -1,11 +1,14 @@
 // Request guard for the /api/* proxy: a same-origin check plus a per-IP rate
 // limit, so a third party can't quietly drain the Finnhub/Marketaux quota.
 //
-// Both are best-effort for a low-traffic deploy: in-memory state lives only in a
-// warm process/instance, and header checks can be spoofed by non-browser clients —
-// the rate limit is the backstop. For hard guarantees, set ALLOWED_ORIGIN and/or
-// front the app with a managed rate limiter (Vercel KV / Upstash).
+// Reads Node-style request headers (a plain object), so it works with both the
+// Vercel function handler and the Vite dev middleware (Connect req/res). Both are
+// best-effort for a low-traffic deploy: in-memory state lives only in a warm
+// process/instance, and header checks can be spoofed by non-browser clients — the
+// rate limit is the backstop. For hard guarantees, set ALLOWED_ORIGIN and/or front
+// the app with a managed rate limiter (Vercel KV / Upstash).
 type Env = Record<string, string | undefined>
+type ReqLike = { headers: Record<string, string | string[] | undefined> }
 
 const WINDOW_MS = 60_000
 const DEFAULT_MAX_PER_MIN = 240
@@ -13,9 +16,15 @@ const MAX_TRACKED_IPS = 10_000
 
 const hits = new Map<string, { count: number; resetAt: number }>()
 
-function clientIp(req: Request): string {
-  const xff = req.headers.get('x-forwarded-for') ?? ''
-  return xff.split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown'
+function header(req: ReqLike, name: string): string {
+  const v = req.headers[name]
+  if (Array.isArray(v)) return v[0] ?? ''
+  return v ?? ''
+}
+
+function clientIp(req: ReqLike): string {
+  const xff = header(req, 'x-forwarded-for')
+  return xff.split(',')[0].trim() || header(req, 'x-real-ip') || 'unknown'
 }
 
 /**
@@ -24,16 +33,16 @@ function clientIp(req: Request): string {
  * same-origin/none. A request with neither signal (e.g. curl) is denied. When
  * ALLOWED_ORIGIN is unset, the origin check is off (rate limit still applies).
  */
-function originAllowed(req: Request, allowed: string): boolean {
+function originAllowed(req: ReqLike, allowed: string): boolean {
   if (!allowed) return true
-  const origin = req.headers.get('origin')
+  const origin = header(req, 'origin')
   if (origin) return origin === allowed
-  const site = req.headers.get('sec-fetch-site')
+  const site = header(req, 'sec-fetch-site')
   if (site) return site === 'same-origin' || site === 'none'
   return false
 }
 
-function rateLimited(req: Request, max: number): boolean {
+function rateLimited(req: ReqLike, max: number): boolean {
   const ip = clientIp(req)
   const now = Date.now()
   if (hits.size > MAX_TRACKED_IPS) hits.clear() // cheap backstop vs. IP-rotation spam
@@ -46,17 +55,14 @@ function rateLimited(req: Request, max: number): boolean {
   return entry.count > max
 }
 
-/** Returns a blocking Response (403/429) if the request should be rejected, else null. */
-export function guard(env: Env, req: Request): Response | null {
+/** Returns a status+message to reject with (403/429), or null to allow. */
+export function guard(env: Env, req: ReqLike): { status: number; message: string } | null {
   if (!originAllowed(req, env.ALLOWED_ORIGIN ?? '')) {
-    return new Response('Forbidden', { status: 403, headers: { 'content-type': 'text/plain' } })
+    return { status: 403, message: 'Forbidden' }
   }
   const max = Number(env.RATE_LIMIT_PER_MIN ?? '') || DEFAULT_MAX_PER_MIN
   if (rateLimited(req, max)) {
-    return new Response('Too Many Requests', {
-      status: 429,
-      headers: { 'content-type': 'text/plain', 'retry-after': '60' },
-    })
+    return { status: 429, message: 'Too Many Requests' }
   }
   return null
 }

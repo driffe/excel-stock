@@ -6,8 +6,8 @@ import type { IndexQuote, Lang, NewsItem } from '../types'
 // News changes slowly and each company-news symbol is a separate request, so poll
 // news on a slower cadence than quotes (≥60s) to stay under Finnhub's free-tier cap.
 const NEWS_REFRESH_MS = Math.max(60000, Number(import.meta.env.VITE_REFRESH_MS ?? 15000))
-// Cosmetic: keep the indices strip shimmering even when markets are closed.
-const INDEX_TICK_MS = 2600
+// Real index values (Stooq via /api/indices) refresh on this cadence.
+const INDEX_REFRESH_MS = 30000
 
 export interface UseNewsResult {
   news: NewsItem[]
@@ -20,7 +20,7 @@ export interface UseNewsResult {
 
 /**
  * Polls the active news provider for market + company news (for the given sheet's
- * symbols) every VITE_REFRESH_MS, and nudges the cosmetic indices strip.
+ * symbols), and the real index strip (S&P/Nasdaq/Dow) from /api/indices.
  */
 export function useNews(symbols: string[], lang: Lang): UseNewsResult {
   const [news, setNews] = useState<NewsItem[]>([])
@@ -71,21 +71,25 @@ export function useNews(symbols: string[], lang: Lang): UseNewsResult {
     }
   }, [symbolsKey, lang, tick])
 
-  // Subtle local drift on the indices strip (purely cosmetic — see data/indices.ts).
+  // Real index values from /api/indices (Stooq, server-side). Keep prior/seed values on error.
   useEffect(() => {
-    const id = setInterval(() => {
-      setIndices((prev) =>
-        prev.map((x) => {
-          const d = (Math.random() - 0.48) * 0.5
-          return {
-            ...x,
-            value: x.value * (1 + d / 1000),
-            changePct: Math.max(-5, Math.min(5, x.changePct + d / 6)),
-          }
-        }),
-      )
-    }, INDEX_TICK_MS)
-    return () => clearInterval(id)
+    let cancelled = false
+    async function loadIndices() {
+      try {
+        const res = await fetch('/api/indices')
+        if (!res.ok) return
+        const data = (await res.json()) as IndexQuote[]
+        if (!cancelled && Array.isArray(data) && data.length) setIndices(data)
+      } catch {
+        /* keep current values */
+      }
+    }
+    loadIndices()
+    const id = setInterval(loadIndices, INDEX_REFRESH_MS)
+    return () => {
+      cancelled = true
+      clearInterval(id)
+    }
   }, [])
 
   return {

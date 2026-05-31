@@ -36,10 +36,10 @@ actual function runtime. Confirm the real runtime once with either:
   `curl "http://localhost:3000/api/quote?symbol=AAPL"` and `curl "http://localhost:3000/api/news?type=market&lang=en"` — expect JSON, not an error page.
 - or a throwaway preview deploy and hit the same endpoints.
 
-The handlers use the **Web signature** (`export function GET(req: Request): Promise<Response>`),
-which Vercel dispatches for `GET` requests on the Node runtime. If a future Vercel
-change expects the legacy `export default (req, res)` form instead, that's the one
-line to adjust (and mirror it in `vite.config.ts`'s `mod.GET`).
+The handlers use the **Node signature** (`export default async function handler(req, res)`
+with `req.url` / `req.headers` and `res.statusCode`/`res.end`) — the form Vercel's Node
+runtime invokes. The Vite dev middleware calls the same `default(req, res)` with Connect's
+Node req/res, so dev and prod run the identical handler.
 
 ## How it works (dev parity)
 
