@@ -1,15 +1,14 @@
 import type { IndexQuote } from '../types'
 
 /**
- * Indices strip seeds for the news pane (■ Major Indices).
+ * Initial / fallback values for the news-pane indices strip (■ Major Indices).
  *
- * Finnhub's free tier can't quote indices (^GSPC etc.), and ETF proxies (SPY≈$598)
- * would display 10×-off magnitudes that break the disguise. So the strip is seeded
- * at realistic index levels and nudged with a subtle local drift (see useNews) —
- * it's purely cosmetic chrome. `key` is localized to a display name in the UI.
+ * Real values are fetched from Stooq via /api/indices (see src/server/indices.ts);
+ * these seeds are shown on first paint and if that fetch fails. `key` is localized
+ * to a display name in the UI.
  */
 export const INDEX_SEEDS: IndexQuote[] = [
-  { key: 'sp500', value: 5998.4, changePct: 0.42 },
-  { key: 'nasdaq', value: 19421.3, changePct: 0.61 },
-  { key: 'dow', value: 44520.18, changePct: 0.18 },
+  { key: 'sp500', value: 7580, changePct: 0.01 },
+  { key: 'nasdaq', value: 26972, changePct: 0.04 },
+  { key: 'dow', value: 51032, changePct: 0.51 },
 ]

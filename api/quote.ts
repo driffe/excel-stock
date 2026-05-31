@@ -1,29 +1,31 @@
 // Vercel serverless function: GET /api/quote?symbol=AAPL
 // Proxies a single Finnhub quote with the API key attached server-side.
-// Uses the Web-handler signature (named `GET` export) — works on Vercel's Node
-// runtime and via the Vite dev middleware. Compiled by Vercel/Vite, not `tsc -b`.
+//
+// Uses the Node handler signature (default export, req/res) — the form Vercel's
+// Node runtime invokes. The same handler runs in dev via the Vite middleware,
+// which passes Connect's Node req/res. Compiled by Vercel/Vite, not `tsc -b`.
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { getQuoteCached } from '../src/server/quoteCache'
 import { guard } from '../src/server/guard'
 
-export async function GET(req: Request): Promise<Response> {
-  const blocked = guard(process.env, req)
-  if (blocked) return blocked
+function send(res: ServerResponse, status: number, contentType: string, body: string) {
+  res.statusCode = status
+  res.setHeader('content-type', contentType)
+  res.end(body)
+}
 
-  const symbol = new URL(req.url).searchParams.get('symbol') ?? ''
-  if (!symbol) {
-    return new Response(JSON.stringify({ error: 'missing symbol' }), {
-      status: 400,
-      headers: { 'content-type': 'application/json' },
-    })
-  }
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  const blocked = guard(process.env, req)
+  if (blocked) return send(res, blocked.status, 'text/plain', blocked.message)
+
+  const symbol = new URL(req.url ?? '', 'http://localhost').searchParams.get('symbol') ?? ''
+  if (!symbol) return send(res, 400, 'application/json', JSON.stringify({ error: 'missing symbol' }))
+
   try {
     const quote = await getQuoteCached(process.env, symbol)
-    return Response.json(quote)
+    send(res, 200, 'application/json', JSON.stringify(quote))
   } catch (e) {
     const msg = process.env.NODE_ENV === 'development' ? String(e) : 'upstream error'
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 502,
-      headers: { 'content-type': 'application/json' },
-    })
+    send(res, 502, 'application/json', JSON.stringify({ error: msg }))
   }
 }
