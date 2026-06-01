@@ -28,7 +28,7 @@ export const DEFAULT_SHEETS: Sheet[] = [
   {
     id: 'etf',
     name: null,
-    symbols: ['SPY', 'QQQ', 'VOO', 'VTI', 'IWM', 'DIA', 'GLD', 'SCHD', 'ARKK', 'XLF'],
+    symbols: ['SPY', 'QQQ', 'VOO', 'VTI', 'IWM', 'DIA', 'GLD', 'SCHD', 'ARKK', 'XLF', 'SOXX', 'IGV', 'KWEB', 'EWY', 'IBIT'],
   },
   {
     id: 'holdings',

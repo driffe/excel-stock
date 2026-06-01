@@ -21,6 +21,10 @@ import { colName, fmtChange, fmtPrice } from './lib/format'
 import type { Quote } from './types'
 
 const LS = 'excelstock_v4'
+// Bump whenever DEFAULT_SHEETS gains symbols you want pushed into existing saved
+// state. On load we run a one-time additive merge (see mergeDefaults) for anyone
+// below this version, then stamp it so the merge never repeats.
+const SHEETS_VERSION = 2
 const TOTAL_COLS = 26
 // Rows rendered for a watchlist sheet — enough to read as a spreadsheet while
 // rendering ~half the cells of a fixed 100 (the grid re-renders on every quote tick).
@@ -32,6 +36,8 @@ interface SavedState {
   sheets: Sheet[]
   activeSheet: string
   favs: string[]
+  /** Seed version the saved sheets were last merged against (absent ⇒ legacy v1). */
+  version?: number
 }
 
 function loadSaved(): SavedState | null {
@@ -42,6 +48,22 @@ function loadSaved(): SavedState | null {
     /* ignore */
   }
   return null
+}
+
+/**
+ * One-time additive sync of DEFAULT_SHEETS into already-saved sheets. For each
+ * default sheet the user still has, append any default symbols they're missing —
+ * nothing is removed, reordered, or renamed, and deleted sheets stay deleted.
+ * Gated by SHEETS_VERSION so it runs once per defaults bump, not every load.
+ */
+function mergeDefaults(saved: SavedState): Sheet[] {
+  if ((saved.version ?? 1) >= SHEETS_VERSION) return saved.sheets
+  return saved.sheets.map((sheet) => {
+    const def = DEFAULT_SHEETS.find((d) => d.id === sheet.id)
+    if (!def) return sheet
+    const missing = def.symbols.filter((sym) => !sheet.symbols.includes(sym))
+    return missing.length ? { ...sheet, symbols: [...sheet.symbols, ...missing] } : sheet
+  })
 }
 
 function pad2(n: number) {
@@ -73,7 +95,7 @@ export default function App() {
   const saved = useMemo(loadSaved, [])
 
   const [sheets, setSheets] = useState<Sheet[]>(
-    saved ? saved.sheets : DEFAULT_SHEETS.map((s) => ({ ...s, symbols: [...s.symbols] })),
+    saved ? mergeDefaults(saved) : DEFAULT_SHEETS.map((s) => ({ ...s, symbols: [...s.symbols] })),
   )
   const [activeSheet, setActiveSheet] = useState<string>(
     saved ? saved.activeSheet : DEFAULT_SHEETS[0].id,
@@ -146,7 +168,10 @@ export default function App() {
 
   // ---- persistence ----
   useEffect(() => {
-    localStorage.setItem(LS, JSON.stringify({ sheets, activeSheet, favs: [...favs] }))
+    localStorage.setItem(
+      LS,
+      JSON.stringify({ sheets, activeSheet, favs: [...favs], version: SHEETS_VERSION }),
+    )
   }, [sheets, activeSheet, favs])
 
   // ---- document title / dismiss hint ----
@@ -547,7 +572,11 @@ export default function App() {
   // (alt-tab, app switch, or you stepping away from the desk), flip to the decoy
   // budget sheet. We only ever CONCEAL — revealing stays a deliberate act (the boss
   // key), so an unattended screen never flips back to stocks on its own.
+  // Skip on mobile: phone browsers fire blur/visibilitychange constantly (keyboard,
+  // app switch, notification shade, scroll), which would flip the stock view to the
+  // decoy nonstop. On mobile we keep the stock window and rely on the manual boss key.
   useEffect(() => {
+    if (window.innerWidth <= 640) return
     const conceal = () => {
       setDecoy(true)
       setOpenFilter(null)
