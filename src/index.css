@@ -26,7 +26,7 @@ html, body {
 #root { height: 100%; }
 .cellfont { font-family: "Carlito", "Calibri", "Segoe UI", sans-serif; }
 
-.app { display: flex; flex-direction: column; height: 100vh; background: #fff; }
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #fff; }
 
 /* ---------- Title bar ---------- */
 .titlebar {
@@ -525,8 +525,9 @@ html, body {
     border-radius: 1px; box-shadow: 0 4px 0 #b0b0b0, 0 -4px 0 #b0b0b0;
   }
 
-  /* -- Sheet tabs: horizontal scroll -- */
-  .sheetbar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* -- Sheet tabs: scrollable + larger touch targets so categories (NASDAQ/NYSE/ETF…) are easy to pick -- */
+  .sheetbar { height: 38px; flex: 0 0 38px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .stab { padding: 0 18px; }
 
   /* -- Status bar: compact -- */
   .sb-bosskey { display: none; }
