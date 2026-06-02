@@ -11,6 +11,7 @@ import { FinnhubProvider } from '../api/finnhub.js'
 import { MockNewsProvider } from '../api/news.js'
 import { FinnhubNewsProvider } from '../api/finnhubNews.js'
 import { MarketauxNewsProvider } from '../api/marketauxNews.js'
+import { RssNewsProvider } from '../api/rssNews.js'
 import { NaverNewsProvider } from '../api/naverNews.js'
 import { CompositeNewsProvider, type TaggedNewsProvider } from '../api/compositeNews.js'
 
@@ -38,6 +39,13 @@ export function buildServerNewsProvider(env: Env): NewsProvider {
 
   const marketaux = env.MARKETAUX_API_TOKEN ?? ''
   if (marketaux) tagged.push({ provider: new MarketauxNewsProvider(marketaux), affinity: 'en' })
+
+  // Keyless EN news (Google News RSS). No key → opt-in via NEWS_RSS so zero-config
+  // dev stays on the mock provider; truthy turns it on (recommended over Marketaux).
+  const rss = (env.NEWS_RSS ?? '').trim().toLowerCase()
+  if (rss && rss !== '0' && rss !== 'false' && rss !== 'off' && rss !== 'no') {
+    tagged.push({ provider: new RssNewsProvider(), affinity: 'en' })
+  }
 
   const nid = env.NAVER_CLIENT_ID ?? ''
   const nsec = env.NAVER_CLIENT_SECRET ?? ''
