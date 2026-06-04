@@ -15,6 +15,11 @@ export interface Quote {
   prevClose: number | null
   /** Epoch ms of the last successful update, or null if never fetched. */
   updatedAt: number | null
+  /**
+   * Display name, filled server-side only for symbols absent from the curated
+   * SYMBOL_NAMES map (e.g. user-added tickers). Optional so providers needn't set it.
+   */
+  name?: string | null
 }
 
 /** A normalized news item, shared across providers (Finnhub / mock). */
