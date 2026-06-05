@@ -306,7 +306,7 @@ export default function App() {
       const sym = view[i].sym
       const q = quotes[sym]
       const on = favs.has(sym)
-      if (c === 0) return { text: sym, star: { ticker: sym, on }, sub: lookupName(sym, lang) || undefined }
+      if (c === 0) return { text: sym, star: { ticker: sym, on }, sub: lookupName(sym, lang) || q?.name || undefined }
       if (c === 1) return { text: q?.price != null ? '$' + fmtPrice(q.price) : '—', num: true }
       if (c === 2) {
         const chg = q?.changePct
@@ -341,7 +341,7 @@ export default function App() {
     const i = r - 1
     if (i < view.length) {
       const sym = view[i].sym
-      if (c === 0) return lookupName(sym, lang) || sym
+      if (c === 0) return lookupName(sym, lang) || quotes[sym]?.name || sym
       if (c === 1) return `=A${r + 1}.Price`
       if (c === 2) return `=A${r + 1}.Change`
     }

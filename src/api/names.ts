@@ -38,6 +38,11 @@ export const SYMBOL_NAMES: Record<string, { en: string; ko: string }> = {
   SCHD: { en: 'Schwab US Dividend', ko: '슈왑 미국배당' },
   ARKK: { en: 'ARK Innovation ETF', ko: 'ARK 이노베이션' },
   XLF: { en: 'Financial Select', ko: '금융 셀렉트' },
+  SOXX: { en: 'iShares Semiconductor', ko: '아이셰어스 반도체' },
+  IGV: { en: 'iShares Tech-Software', ko: '아이셰어스 소프트웨어' },
+  KWEB: { en: 'KraneShares China Net', ko: '크레인셰어스 중국인터넷' },
+  EWY: { en: 'iShares MSCI S.Korea', ko: '아이셰어스 한국' },
+  IBIT: { en: 'iShares Bitcoin Trust', ko: '아이셰어스 비트코인' },
 }
 
 /** Returns the localized display name for a symbol, or '' when unknown. */

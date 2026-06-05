@@ -5,6 +5,8 @@
 // in a warm process (Vite dev server; warm Vercel function instance).
 import { buildServerQuoteProvider } from './providers.js'
 import { getStooqQuoteCached, SHARED_SYMBOLS } from './stooqQuotes.js'
+import { getStooqNameCached } from './stooqNames.js'
+import { SYMBOL_NAMES } from '../api/names.js'
 import type { QuoteProvider } from '../api/provider.js'
 import type { Quote } from '../types.js'
 
@@ -41,7 +43,15 @@ export async function getQuoteCached(env: Env, symbol: string): Promise<Quote> {
 
   const promise = getProvider(env)
     .getQuote(key)
-    .then((quote) => {
+    .then(async (quote) => {
+      // Symbols on this path aren't in the default watchlist, so they're typically
+      // user-added. Fill a display name from Stooq (keyless) for any not in the
+      // curated map — the client falls back to this when lookupName() is empty.
+      // Provider-agnostic: works whether the quote came from Finnhub or the dev mock.
+      if (!SYMBOL_NAMES[key]) {
+        const name = await getStooqNameCached(key).catch(() => null)
+        if (name) quote.name = name
+      }
       if (cache.size > MAX_ENTRIES) cache.clear()
       cache.set(key, { at: Date.now(), quote })
       inflight.delete(key)
