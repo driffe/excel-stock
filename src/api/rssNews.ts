@@ -5,13 +5,13 @@ import { relatedSymbols } from './tickerMatch.js'
 
 /**
  * Keyless English news via **Google News RSS** — the news analogue of the keyless
- * Stooq quote source. No API key, no daily quota: upstream load is just
+ * batch quote source. No API key, no daily quota: upstream load is just
  * (distinct queries ÷ poll cadence), independent of viewer count, so it can't
  * "run out" mid-spike the way a metered source (Marketaux's 100/day) does.
  *
  * Server-side only (added in buildServerNewsProvider). Google News serves a clean
  * RSS 2.0 feed to datacenter requests where Yahoo's RSS 429s — same reason
- * indices.ts prefers Stooq over Yahoo. Market and company news both use the
+ * indices.ts avoids Yahoo. Market and company news both use the
  * `search` feed (the `topic/BUSINESS` headlines feed returns empty for server
  * requests, so it's avoided).
  *

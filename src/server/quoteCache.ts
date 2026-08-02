@@ -4,8 +4,8 @@
 // mode under Finnhub's free-tier rate limit. Module state persists across requests
 // in a warm process (Vite dev server; warm Vercel function instance).
 import { buildServerQuoteProvider } from './providers.js'
-import { getStooqQuoteCached, SHARED_SYMBOLS } from './stooqQuotes.js'
-import { getStooqNameCached } from './stooqNames.js'
+import { getBatchQuoteCached, SHARED_SYMBOLS } from './batchQuotes.js'
+import { getNameCached } from './nameLookup.js'
 import { SYMBOL_NAMES } from '../api/names.js'
 import type { QuoteProvider } from '../api/provider.js'
 import type { Quote } from '../types.js'
@@ -25,12 +25,12 @@ function getProvider(env: Env): QuoteProvider {
 export async function getQuoteCached(env: Env, symbol: string): Promise<Quote> {
   const key = symbol.toUpperCase()
 
-  // Shared default-watchlist symbols (the viral 95%) go through Stooq's keyless
-  // batch, so quota stays constant under a spike regardless of viewer count. Only
-  // fall through to the per-symbol Finnhub path if Stooq has no price for it.
+  // Shared default-watchlist symbols (the viral 95%) go through the keyless batch,
+  // so quota stays constant under a spike regardless of viewer count. Only fall
+  // through to the per-symbol Finnhub path if the batch has no price for it.
   if (SHARED_SYMBOLS.has(key)) {
-    const stooq = await getStooqQuoteCached(key).catch(() => null)
-    if (stooq && stooq.price != null) return stooq
+    const batched = await getBatchQuoteCached(key).catch(() => null)
+    if (batched && batched.price != null) return batched
   }
 
   const now = Date.now()
@@ -45,11 +45,11 @@ export async function getQuoteCached(env: Env, symbol: string): Promise<Quote> {
     .getQuote(key)
     .then(async (quote) => {
       // Symbols on this path aren't in the default watchlist, so they're typically
-      // user-added. Fill a display name from Stooq (keyless) for any not in the
+      // user-added. Fill a display name from the keyless lookup for any not in the
       // curated map — the client falls back to this when lookupName() is empty.
       // Provider-agnostic: works whether the quote came from Finnhub or the dev mock.
       if (!SYMBOL_NAMES[key]) {
-        const name = await getStooqNameCached(key).catch(() => null)
+        const name = await getNameCached(key).catch(() => null)
         if (name) quote.name = name
       }
       if (cache.size > MAX_ENTRIES) cache.clear()
