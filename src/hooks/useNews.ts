@@ -6,7 +6,7 @@ import type { IndexQuote, Lang, NewsItem } from '../types'
 // News changes slowly and each company-news symbol is a separate request, so poll
 // news on a slower cadence than quotes (≥60s) to stay under Finnhub's free-tier cap.
 const NEWS_REFRESH_MS = Math.max(60000, Number(import.meta.env.VITE_REFRESH_MS ?? 15000))
-// Real index values (Stooq via /api/indices) refresh on this cadence.
+// Real index values (keyless batch feed via /api/indices) refresh on this cadence.
 const INDEX_REFRESH_MS = 30000
 
 export interface UseNewsResult {
@@ -71,7 +71,7 @@ export function useNews(symbols: string[], lang: Lang): UseNewsResult {
     }
   }, [symbolsKey, lang, tick])
 
-  // Real index values from /api/indices (Stooq, server-side). Keep prior/seed values on error.
+  // Real index values from /api/indices (server-side). Keep prior/seed values on error.
   useEffect(() => {
     let cancelled = false
     async function loadIndices() {
