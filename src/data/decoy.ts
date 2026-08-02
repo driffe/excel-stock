@@ -24,9 +24,8 @@ const KO: DecoyData = {
   colWidths: [158, 106, 106, 72, 106, 114, 86],
   rows: [
     { type: 'title',  text: '㈜ 넥스트솔루션' },
-    { type: 'report', text: '2026년 1분기 부서별 예산 집행 현황 보고서 (내부 결재용)' },
-    { type: 'meta',   cells: ['보고 기간 : 2026.01.01 ~ 2026.03.31', null, '작성부서 : 재무기획팀', null, '문서번호 : FIN-2026-Q1-007', null, null] },
-    { type: 'meta',   cells: ['작　성 : 재무기획팀  김 대리', null, '검　토 : 재무팀장  이 부장', null, '승　인 : CFO  박 전무', null, null] },
+    { type: 'report', text: '2026년 1분기 부서별 예산 집행 현황 보고서' },
+    { type: 'meta',   cells: ['보고 기간 : 2026.01.01 ~ 2026.03.31', null, '작성부서 : 재무기획팀', null, null, null, null] },
     { type: 'empty' },
     // ── 본부별 집계 ──
     { type: 'report', text: '[ 1 ]  부서별 예산 집행 현황' },
@@ -119,7 +118,7 @@ const KO: DecoyData = {
     { type: 'data',   cells: ['합  계',             859_000, 718_000, '83.6%', 905_000, 3_523_000, '100.0%'], total: true },
     { type: 'empty' },
     { type: 'note',   text: '※ 달성률 90% 이상 : 우수 / 80~89% : 정상 / 70~79% : 주의 / 70% 미만 : 개선 필요' },
-    { type: 'note',   text: '※ 단위 : 천원  |  음영(초록) 항목은 소계 행  |  본 자료는 대외비이며 외부 유출 금지' },
+    { type: 'note',   text: '※ 단위 : 천원  |  음영(초록) 항목은 소계 행' },
   ],
 }
 
@@ -130,9 +129,8 @@ const EN: DecoyData = {
   colWidths: [158, 106, 106, 72, 106, 114, 86],
   rows: [
     { type: 'title',  text: 'NextSolution Corp.' },
-    { type: 'report', text: 'Q1 2026 Departmental Budget Execution Report (Internal — Confidential)' },
-    { type: 'meta',   cells: ['Period : Jan 1 – Mar 31, 2026', null, 'Dept : Finance Planning', null, 'Doc No. : FIN-2026-Q1-007', null, null] },
-    { type: 'meta',   cells: ['Prepared : Finance Planning  Kim', null, 'Reviewed : Finance Director  Lee', null, 'Approved : CFO  Park', null, null] },
+    { type: 'report', text: 'Q1 2026 Departmental Budget Execution Report' },
+    { type: 'meta',   cells: ['Period : Jan 1 – Mar 31, 2026', null, 'Dept : Finance Planning', null, null, null, null] },
     { type: 'empty' },
     { type: 'report', text: '[ 1 ]  Departmental Budget Execution' },
     { type: 'header', cells: ['Department', 'Q1 Budget ($K)', 'Q1 Actual ($K)', 'Rate', 'Q2 Budget ($K)', 'Annual Budget ($K)', 'YoY'] },
@@ -218,7 +216,7 @@ const EN: DecoyData = {
     { type: 'data',   cells: ['Total',                    859_000, 718_000, '83.6%', 905_000, 3_523_000, '100.0%'], total: true },
     { type: 'empty' },
     { type: 'note',   text: '* Rate ≥90%: Excellent  |  80–89%: On Track  |  70–79%: Caution  |  <70%: Needs Immediate Review' },
-    { type: 'note',   text: '* Unit: USD thousands  |  Green rows = subtotals  |  CONFIDENTIAL — Do not distribute externally' },
+    { type: 'note',   text: '* Unit: USD thousands  |  Green rows = subtotals' },
   ],
 }
 
