@@ -15,7 +15,7 @@ interface Res {
   end(body: string): void
 }
 
-// Edge/CDN cache for OK responses (one keyless Stooq call backs all viewers).
+// Edge/CDN cache for OK responses (one keyless upstream call backs all viewers).
 const OK_CACHE = 'public, s-maxage=30, stale-while-revalidate=120'
 
 function send(res: Res, status: number, contentType: string, body: string, cache = 'no-store') {

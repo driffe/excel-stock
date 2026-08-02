@@ -16,7 +16,8 @@ The app talks to external APIs only through same-origin `/api/*` proxy endpoints
 | `NAVER_CLIENT_SECRET` | KO news | **Secret** — server-side only. |
 | `ALLOWED_ORIGIN` | **recommended** | Lock `/api/*` to your deploy URL (e.g. `https://your-app.vercel.app`). Without it the proxy is open to the world. |
 | `RATE_LIMIT_PER_MIN` | optional | Per-IP cap on `/api/*` (default 240). |
-| `QUOTE_TTL_MS` | optional | Stooq snapshot TTL for shared default symbols (default 30000). The spike dial — raise it during a launch to cut upstream load further. |
+| `QUOTE_TTL_MS` | optional | Batch snapshot TTL for shared default symbols (default 30000). The spike dial — raise it during a launch to cut upstream load further. |
+| `SEC_USER_AGENT` | optional | Enables the SEC ticker→name fallback for user-added symbols. SEC 403s requests without a contact address in the UA, so set e.g. `excel-stock/1.0 (you@example.com)`. Unset = tier skipped. |
 
 Only set the keys for the sources you use; the proxy enables each source whose
 key(s) are present and falls back to mock/empty otherwise.
