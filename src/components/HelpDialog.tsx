@@ -64,6 +64,7 @@ export default function HelpDialog({ onClose }: { onClose: () => void }) {
             {t('help.send')}
           </button>
         </div>
+        <p className="help-disclaimer">{t('disclaimer.full')}</p>
       </div>
     </div>
   )

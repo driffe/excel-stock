@@ -61,11 +61,19 @@ interface RibbonHomeProps {
   onSort: () => void
   onInsert: () => void
   onCond: () => void
-  onCoffee: () => void
   onHelp: () => void
+  autoConceal: boolean
+  onToggleAutoConceal: () => void
 }
 
-export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: RibbonHomeProps) {
+export function RibbonHome({
+  onSort,
+  onInsert,
+  onCond,
+  onHelp,
+  autoConceal,
+  onToggleAutoConceal,
+}: RibbonHomeProps) {
   const { t } = useI18n()
   return (
     <div className="ribbon">
@@ -107,7 +115,7 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
         >
           <div className="rmini-row">
             <div className="rcombo" style={{ width: 110 }}>
-              Calibri <span className="caret">▾</span>
+              Carlito <span className="caret">▾</span>
             </div>
             <div className="rcombo" style={{ width: 48 }}>
               11 <span className="caret">▾</span>
@@ -366,9 +374,17 @@ export function RibbonHome({ onSort, onInsert, onCond, onCoffee, onHelp }: Ribbo
       {/* Support — pushed to far right */}
       <div className="rgroup rgroup-support" style={{ marginLeft: 'auto', borderRight: 'none', borderLeft: '1px solid var(--line)' }}>
         <div className="rgroup-body" style={{ gap: 4 }}>
-          <div className="rbtn big rib-coffee" onClick={onCoffee} title={t('titlebar.coffee')}>
-            <i className="fa-solid fa-mug-hot" style={{ fontSize: 28 }} />
-            <span className="lbl">{multiline(t('ribbon.btn.coffee'))}</span>
+          <div
+            className={'rbtn big' + (autoConceal ? ' on' : '')}
+            onClick={onToggleAutoConceal}
+            title={t('tip.autoconceal')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5a5a5a" strokeWidth="1.6" strokeLinecap="round">
+              <path d="M10.6 5.3A10.7 10.7 0 0112 5.2c5 0 9 3.2 10.5 6.8-.6 1.4-1.5 2.7-2.7 3.8m-3 2A10.4 10.4 0 0112 18.8c-5 0-9-3.2-10.5-6.8a13 13 0 013.4-4.4" />
+              <path d="M9.5 9.6a3 3 0 004.2 4.2" />
+              <path d="M3.5 3.5l17 17" />
+            </svg>
+            <span className="lbl">{multiline(t('ribbon.btn.autoconceal'))}</span>
           </div>
           <div className="rbtn big" onClick={onHelp} title={t('titlebar.help')}>
             <svg viewBox="0 0 24 24">

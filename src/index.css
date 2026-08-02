@@ -1,4 +1,4 @@
-/* ===== Excel 365 chrome ===== */
+/* ===== spreadsheet chrome ===== */
 :root {
   --green:      #107C41;
   --green-d:    #0B5C30;
@@ -24,7 +24,7 @@ html, body {
   user-select: none;
 }
 #root { height: 100%; }
-.cellfont { font-family: "Carlito", "Calibri", "Segoe UI", sans-serif; }
+.cellfont { font-family: "Carlito", "Segoe UI", sans-serif; }
 
 .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #fff; }
 
@@ -37,8 +37,9 @@ html, body {
 .tb-ico {
   width: 18px; height: 18px; background: #fff; border-radius: 2px;
   display: grid; place-items: center; color: var(--green);
-  font-weight: 800; font-size: 12px; flex: 0 0 auto;
+  flex: 0 0 auto;
 }
+.tb-ico svg { width: 13px; height: 13px; }
 .tb-qbtn {
   width: 22px; height: 22px; display: grid; place-items: center;
   border-radius: 3px; opacity: .92; cursor: default;
@@ -60,17 +61,6 @@ html, body {
 }
 .tb-lang:hover { background: rgba(255,255,255,.18); }
 .tb-lang svg { width: 14px; height: 14px; }
-.tb-acct {
-  display: flex; align-items: center; gap: 6px; padding: 0 8px; font-size: 12px;
-}
-.tb-avatar {
-  width: 22px; height: 22px; border-radius: 50%; background: #8E6CC0; color: #fff;
-  display: grid; place-items: center; font-size: 11px; font-weight: 600;
-}
-.tb-win { width: 30px; height: 30px; display: grid; place-items: center; }
-.tb-win:hover { background: rgba(255,255,255,.18); }
-.tb-win.close:hover { background: #E81123; }
-.tb-win svg { width: 11px; height: 11px; stroke: #fff; fill: none; stroke-width: 1; }
 
 /* ---------- Ribbon tabs ---------- */
 .ribtabs {
@@ -209,7 +199,7 @@ html, body {
 /* inline editor */
 .celledit {
   position: absolute; z-index: 6; border: 2px solid var(--green); outline: none;
-  font-size: 13px; padding: 0 4px; font-family: "Carlito","Calibri",sans-serif;
+  font-size: 13px; padding: 0 4px; font-family: "Carlito",sans-serif;
   background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18);
 }
 
@@ -285,12 +275,6 @@ html, body {
 .btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
 .btn.primary:hover { background: var(--green-d); }
 
-/* coffee modal */
-.coffee-modal { width: 360px; }
-.coffee-body { align-items: center; text-align: center; padding: 20px 20px 8px; }
-.coffee-icon { font-size: 52px; line-height: 1; margin-bottom: 12px; }
-.coffee-msg { margin: 0; line-height: 1.65; color: #444; font-size: 13px; }
-
 /* help modal */
 .help-modal { width: 440px; }
 .help-textarea {
@@ -299,6 +283,10 @@ html, body {
   outline: none; line-height: 1.5;
 }
 .help-textarea:focus { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+.help-disclaimer { margin: 0; padding: 0 16px 14px; color: #888; font-size: 11px; line-height: 1.5; }
+
+/* status bar unaffiliation disclaimer */
+.sb-disclaimer { color: #aaa; font-size: 11px; white-space: nowrap; }
 
 /* status bar boss-key shortcut indicator */
 .sb-bosskey {
@@ -390,9 +378,9 @@ html, body {
 .ctx-item-danger { color: #C0392B; }
 .ctx-item-danger:hover { background: #FDECEA; }
 
-/* ribbon support group */
-.rib-coffee svg { fill: #107C41; }
-.rib-coffee:hover svg { fill: #0B5C30; }
+/* ribbon support group — active toggle state (e.g. auto-conceal) */
+.rbtn.on { background: var(--green-hdr); }
+.rbtn.on svg { stroke: var(--green-d); }
 
 /* filter dropdown */
 .fmenu-scrim { position: fixed; inset: 0; z-index: 70; }
@@ -479,7 +467,7 @@ html, body {
 /* ===== Mobile responsive (≤640px) ===== */
 @media (max-width: 640px) {
   /* -- Title bar: strip decorative chrome, keep search + lang -- */
-  .tb-qbtn, .tb-sep, .tb-acct, .tb-win { display: none !important; }
+  .tb-qbtn, .tb-sep { display: none !important; }
   .tb-search { flex: 1 1 auto; max-width: none; margin: 0; }
 
   /* -- Ribbon tabs: purely decorative on mobile -- */

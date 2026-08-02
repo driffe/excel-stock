@@ -4,9 +4,7 @@ import type { TranslationKey } from './en'
 export const ko: Record<TranslationKey, string> = {
   // Window / title bar
   'app.filename': '가계부_2026년.xlsx',
-  'app.suffix': 'Excel',
   'titlebar.searchHint': '종목 검색',
-  'titlebar.account': '홍길동',
   'titlebar.lang': 'EN',
 
   // Ribbon tabs
@@ -91,7 +89,7 @@ export const ko: Record<TranslationKey, string> = {
   'add.submit': '추가',
 
   // Boss-key hint
-  'hint.bosskey': '{key} 키를 누르면 위장 모드 (보스키)',
+  'hint.bosskey': '{key} 키를 누르면 위장 모드 (보스키) · 자동 위장은 선택 사항이며 기본값은 꺼짐',
   'hint.bossmodeShort': '` 보스키',
 
   // News pane
@@ -129,12 +127,6 @@ export const ko: Record<TranslationKey, string> = {
   // Grid placeholder
   'grid.addHint': '여기에 종목 추가…',
 
-  // Coffee dialog
-  'coffee.title': '개발자 응원하기',
-  'coffee.msg': '이 프로젝트가 재미있으셨나요? 주식 관리에 조금이라도 도움이 됐거나, 그냥 만드는 게 즐거우셨다면 — 커피 한 잔이 큰 힘이 됩니다 😄',
-  'coffee.btn': '커피 한 잔 사주기 ☕',
-  'coffee.close': '다음에요',
-
   // Help / feedback dialog
   'help.title': '도움말 및 피드백',
   'help.subjectLabel': '제목',
@@ -145,11 +137,10 @@ export const ko: Record<TranslationKey, string> = {
   'help.cancel': '취소',
 
   // TitleBar extra buttons
-  'titlebar.coffee': '커피 한 잔 사주기',
   'titlebar.help': '도움말 및 피드백',
 
   // Ribbon support group
-  'ribbon.btn.coffee': '커피\n사주기',
+  'ribbon.btn.autoconceal': '자동\n위장',
   'ribbon.btn.help': '도움말\n피드백',
   'ribbon.group.support': '지원',
 
@@ -184,6 +175,7 @@ export const ko: Record<TranslationKey, string> = {
   'tip.autosum': '자동 합계',
   'tip.fill': '채우기',
   'tip.clear': '지우기',
+  'tip.autoconceal': '창이 비활성화되면 자동 위장 (선택 사항, 기본값 꺼짐)',
 
   // Sheet delete confirmation
   'sheet.deleteConfirm': '"{name}" 시트와 종목을 삭제할까요?',
@@ -192,4 +184,9 @@ export const ko: Record<TranslationKey, string> = {
   'news.empty': '뉴스 없음',
   'news.loading': '뉴스 불러오는 중…',
   'fbar.error': '연결 오류',
+
+  // Disclaimer
+  'disclaimer.short': 'Excel Stock · Microsoft와 관련 없는 독립 프로젝트',
+  'disclaimer.full':
+    'Excel Stock은 스프레드시트 형태의 UI를 가진 독립적인 오픈소스 관심종목 앱입니다. Microsoft와 제휴, 승인 또는 후원 관계가 없습니다. Excel과 Office는 각 소유권자의 상표입니다.',
 }

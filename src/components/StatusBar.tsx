@@ -37,6 +37,7 @@ export default function StatusBar({
   return (
     <div className="statusbar">
       <span>{t('status.ready')}</span>
+      {!decoy && <span className="sb-disclaimer">{t('disclaimer.short')}</span>}
       {!decoy && <span className="sb-bosskey">{t('hint.bossmodeShort')}</span>}
       {!decoy && (
         <div className="sb-sum">
