@@ -1,39 +1,40 @@
 // Real index values for the news-pane strip (S&P 500 / Nasdaq Composite / Dow),
-// fetched server-side from Stooq's keyless light-quote CSV. Stooq tolerates
-// datacenter IPs (unlike Yahoo, which 429s from Vercel). One request covers all
-// three; results are TTL-cached. `changePct` is the intraday move (close vs open)
-// since the keyless endpoint doesn't expose the previous close. Falls back to the
-// seed levels if Stooq is unavailable, so the strip always shows something.
+// fetched server-side from CNBC's keyless batch quote endpoint (see cnbc.ts). One
+// request covers all three; results are TTL-cached.
+//
+// `changePct` is now quoted vs. the PREVIOUS CLOSE (the upstream exposes it),
+// matching every finance site. The previous Stooq-backed implementation could only
+// compute an intraday close-vs-open move, so the strip disagreed with Yahoo/Google
+// on gap days.
+//
+// Never throws. The former implementation let an upstream failure propagate, so
+// when Stooq's endpoint was retired /api/indices returned 502 on ~100% of calls —
+// the per-symbol INDEX_SEEDS fallback below only ran AFTER a successful HTTP
+// response, which is precisely the case that had stopped happening. Degrading to
+// the seeds keeps the strip populated and the function's error rate at zero.
 import type { IndexQuote } from '../types.js'
 import { INDEX_SEEDS } from '../data/indices.js'
+import { fetchQuotes, INDEX_SYMBOLS } from './cnbc.js'
 
 const TTL_MS = 30_000
-const STOOQ_URL = 'https://stooq.com/q/l/?s=^spx+^ndq+^dji&f=sohlc&h&e=csv'
 
-// Stooq symbol (uppercased) → our index key.
-const SYMBOL_KEY: Record<string, string> = {
-  '^SPX': 'sp500',
-  '^NDQ': 'nasdaq',
-  '^DJI': 'dow',
-}
+// CNBC symbol (uppercase) → our index key. Inverted from the shared map in cnbc.ts
+// so the two can never drift apart.
+const SYMBOL_KEY: Record<string, string> = Object.fromEntries(
+  Object.entries(INDEX_SYMBOLS).map(([key, sym]) => [sym.toUpperCase(), key]),
+)
 
 let cache: { at: number; data: IndexQuote[] } | null = null
 let inflight: Promise<IndexQuote[]> | null = null
 
 async function fetchAll(): Promise<IndexQuote[]> {
-  const res = await fetch(STOOQ_URL, { headers: { accept: 'text/csv' } })
-  if (!res.ok) throw new Error(`stooq ${res.status}`)
-  const text = await res.text()
+  const quotes = await fetchQuotes(Object.values(INDEX_SYMBOLS))
 
   const byKey = new Map<string, IndexQuote>()
-  for (const line of text.trim().split('\n').slice(1)) {
-    // "^SPX,open,high,low,close"
-    const [sym, open, , , close] = line.split(',')
-    const key = SYMBOL_KEY[(sym ?? '').toUpperCase()]
-    const o = parseFloat(open)
-    const c = parseFloat(close)
-    if (key && Number.isFinite(o) && Number.isFinite(c) && o > 0) {
-      byKey.set(key, { key, value: c, changePct: ((c - o) / o) * 100 })
+  for (const [sym, q] of quotes) {
+    const key = SYMBOL_KEY[sym]
+    if (key && q.price != null && q.price > 0) {
+      byKey.set(key, { key, value: q.price, changePct: q.changePct ?? 0 })
     }
   }
 
@@ -52,10 +53,12 @@ export async function getIndices(): Promise<IndexQuote[]> {
       inflight = null
       return data
     })
-    .catch((err) => {
+    .catch(() => {
       inflight = null
-      if (cache) return cache.data
-      throw err
+      // Serve the last good values if we have any, else the seeds. Deliberately
+      // NOT cached: the next call retries the upstream instead of being pinned to
+      // seed levels for a whole TTL window.
+      return cache?.data ?? INDEX_SEEDS.map((seed) => ({ ...seed }))
     })
   return inflight
 }
