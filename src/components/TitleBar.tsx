@@ -16,7 +16,7 @@ interface TitleBarProps {
   onSearch: (q: string) => void
 }
 
-/** Excel green title bar: quick-access icons, search, language toggle, account, window buttons. */
+/** Spreadsheet title bar: quick-access icons, search, language toggle. */
 export default function TitleBar({
   filename,
   searchVal,
@@ -26,7 +26,11 @@ export default function TitleBar({
   const { t, toggleLang } = useI18n()
   return (
     <div className="titlebar">
-      <div className="tb-ico">X</div>
+      <div className="tb-ico">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 18l5-6 4 3 6-8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
       <div className="tb-qbtn" title={t('tip.autosave')}>
         <svg viewBox="0 0 24 24">
           <circle cx="7" cy="12" r="4" fill="#fff" />
@@ -77,26 +81,6 @@ export default function TitleBar({
             />
           </svg>
           <span>{t('titlebar.lang')}</span>
-        </div>
-        <div className="tb-acct">
-          <span>{t('titlebar.account')}</span>
-          <div className="tb-avatar">{t('titlebar.account').charAt(0)}</div>
-        </div>
-        <div className="tb-win">
-          <svg viewBox="0 0 12 12">
-            <line x1="2" y1="6" x2="10" y2="6" />
-          </svg>
-        </div>
-        <div className="tb-win">
-          <svg viewBox="0 0 12 12">
-            <rect x="2.5" y="2.5" width="7" height="7" />
-          </svg>
-        </div>
-        <div className="tb-win close">
-          <svg viewBox="0 0 12 12">
-            <line x1="2.5" y1="2.5" x2="9.5" y2="9.5" />
-            <line x1="9.5" y1="2.5" x2="2.5" y2="9.5" />
-          </svg>
         </div>
       </div>
     </div>

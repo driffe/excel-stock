@@ -2,9 +2,7 @@
 export const en = {
   // Window / title bar
   'app.filename': 'Budget_Review_2026.xlsx',
-  'app.suffix': 'Excel',
   'titlebar.searchHint': 'Search stocks',
-  'titlebar.account': 'James Kim',
   'titlebar.lang': 'KO', // label of the toggle = the language you switch TO
 
   // Ribbon tabs
@@ -89,7 +87,7 @@ export const en = {
   'add.submit': 'Add',
 
   // Boss-key hint
-  'hint.bosskey': 'Press {key} for disguise mode (boss key)',
+  'hint.bosskey': 'Press {key} for disguise mode (boss key) · auto-conceal is opt-in, off by default',
   'hint.bossmodeShort': '` Boss key',
 
   // News pane
@@ -127,12 +125,6 @@ export const en = {
   // Grid placeholder
   'grid.addHint': 'Add ticker here…',
 
-  // Coffee dialog
-  'coffee.title': 'Support the Developer',
-  'coffee.msg': 'Did you enjoy this project? If tracking your stocks with ExcelStock has been even a little useful — or just fun — a coffee would make my day and keep this project going 😄',
-  'coffee.btn': 'Buy Me a Coffee ☕',
-  'coffee.close': 'Maybe later',
-
   // Help / feedback dialog
   'help.title': 'Help & Feedback',
   'help.subjectLabel': 'Subject',
@@ -143,11 +135,10 @@ export const en = {
   'help.cancel': 'Cancel',
 
   // TitleBar extra buttons
-  'titlebar.coffee': 'Buy me a coffee',
   'titlebar.help': 'Help & Feedback',
 
   // Ribbon support group
-  'ribbon.btn.coffee': 'Buy me\na coffee',
+  'ribbon.btn.autoconceal': 'Auto-\nconceal',
   'ribbon.btn.help': 'Help &\nFeedback',
   'ribbon.group.support': 'Support',
 
@@ -182,6 +173,7 @@ export const en = {
   'tip.autosum': 'AutoSum',
   'tip.fill': 'Fill',
   'tip.clear': 'Clear',
+  'tip.autoconceal': 'Auto-conceal on window blur (opt-in, off by default)',
 
   // Sheet delete confirmation
   'sheet.deleteConfirm': 'Delete the "{name}" sheet and its tickers?',
@@ -190,6 +182,11 @@ export const en = {
   'news.empty': 'No news available',
   'news.loading': 'Loading news…',
   'fbar.error': 'Connection error',
+
+  // Disclaimer
+  'disclaimer.short': 'Excel Stock · Not affiliated with Microsoft',
+  'disclaimer.full':
+    'Excel Stock is an independent, open-source stock watchlist with a spreadsheet-style interface. It is not affiliated with, endorsed by, or sponsored by Microsoft. Excel and Office are trademarks of their respective owners.',
 } as const
 
 export type TranslationKey = keyof typeof en

@@ -7,7 +7,6 @@ import SheetTabs, { type TabItem } from './components/SheetTabs'
 import StatusBar from './components/StatusBar'
 import NewsPane from './components/NewsPane'
 import AddDialog from './components/AddDialog'
-import CoffeeDialog from './components/CoffeeDialog'
 import HelpDialog from './components/HelpDialog'
 import FilterMenu, { type FilterMode } from './components/FilterMenu'
 import { useQuotes } from './hooks/useQuotes'
@@ -115,9 +114,11 @@ export default function App() {
   const [decoy, setDecoy] = useState(false)
   const [flash, setFlash] = useState<Set<string>>(new Set())
   const [hint, setHint] = useState(() => !localStorage.getItem('excelstock_hint_seen'))
+  const [autoConceal, setAutoConceal] = useState(
+    () => localStorage.getItem('excelstock_autoconceal') === '1',
+  )
   const [renameId, setRenameId] = useState<string | null>(null)
   const [showNews, setShowNews] = useState(true)
-  const [showCoffee, setShowCoffee] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const [splitPct, setSplitPct] = useState(35)
   const [mobileSplitPct, setMobileSplitPct] = useState(55)
@@ -177,7 +178,7 @@ export default function App() {
   // ---- document title / dismiss hint ----
   useEffect(() => {
     const fname = decoy ? getDecoy(lang).filename : t('app.filename')
-    document.title = `${fname} - ${t('app.suffix')}`
+    document.title = fname
   }, [decoy, lang, t])
   useEffect(() => {
     if (!hint) return
@@ -576,6 +577,7 @@ export default function App() {
   // app switch, notification shade, scroll), which would flip the stock view to the
   // decoy nonstop. On mobile we keep the stock window and rely on the manual boss key.
   useEffect(() => {
+    if (!autoConceal) return
     if (window.innerWidth <= 640) return
     const conceal = () => {
       setDecoy(true)
@@ -590,7 +592,15 @@ export default function App() {
       window.removeEventListener('blur', conceal)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [])
+  }, [autoConceal])
+
+  function toggleAutoConceal() {
+    setAutoConceal((v) => {
+      const next = !v
+      localStorage.setItem('excelstock_autoconceal', next ? '1' : '0')
+      return next
+    })
+  }
 
   // ---- derived display values ----
   const selRef = colName(sel.c) + (sel.r + 1)
@@ -638,8 +648,9 @@ export default function App() {
         onSort={() => onSortCol(sel.c)}
         onInsert={() => !decoy && setShowAdd(true)}
         onCond={() => setDataBars((v) => !v)}
-        onCoffee={() => setShowCoffee(true)}
         onHelp={() => setShowHelp(true)}
+        autoConceal={autoConceal}
+        onToggleAutoConceal={toggleAutoConceal}
       />
       <FormulaBar
         selRef={selRef}
@@ -741,7 +752,6 @@ export default function App() {
         />
       )}
 
-      {showCoffee && <CoffeeDialog onClose={() => setShowCoffee(false)} />}
       {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
 
       <div className={'hint' + (hint ? ' show' : '')}>{renderHint(t('hint.bosskey'))}</div>
